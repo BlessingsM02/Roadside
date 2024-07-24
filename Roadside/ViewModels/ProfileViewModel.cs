@@ -11,6 +11,7 @@ namespace Roadside.ViewModels
         private string _lastName;
         private string _vehicleDescription;
         private string _plateNumber;
+        private string _mobileNumber;
         private FirebaseClient _firebaseClient;
 
         public ProfileViewModel()
@@ -59,6 +60,16 @@ namespace Roadside.ViewModels
                 OnPropertyChanged();
             }
         }
+        public string MobileNumber
+        {
+            get=> _mobileNumber;
+            set
+            {
+                _mobileNumber = value;
+                OnPropertyChanged();
+            }
+            
+        }
 
         public Command LoadUserProfileCommand { get; }
 
@@ -81,6 +92,7 @@ namespace Roadside.ViewModels
                     LastName = user.LastName;
                     VehicleDescription = user.VehicleDescription;
                     PlateNumber = user.PlateNumber;
+                    MobileNumber = user.MobileNumber;
                 }
                 else
                 {
