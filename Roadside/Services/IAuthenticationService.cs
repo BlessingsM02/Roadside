@@ -4,6 +4,6 @@
     {
         Task<bool> AuthenticateMobile(string mobile);
         Task<bool> ValidateOTP(string code);
-        Task<string> GetAuthTokenAsync();
+        
     }
 }

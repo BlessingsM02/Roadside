@@ -14,6 +14,7 @@ namespace Roadside.Services
             _verificationCodeCompleteSource = new TaskCompletionSource<bool>();
 
             // Ensure you have the current activity context
+            Preferences.Set("mobile_number", mobile);
             Activity currentActivity = Platform.CurrentActivity;
 
             var authOption = PhoneAuthOptions.NewBuilder()
@@ -35,23 +36,8 @@ namespace Roadside.Services
             _verificationID = verificationID;
         }
 
-        private void SaveAuthToken(string token)
-        {
-            SecureStorage.SetAsync("auth_token", token);
-        }
-        // Method to retrieve authentication token
-        private async Task<string> GetAuthTokenAsync()
-        {
-            try
-            {
-                return await SecureStorage.GetAsync("auth_token");
-            }
-            catch (Exception ex)
-            {
-                // Handle possible exceptions here
-               
-            }
-        }
+       
+       
         public override void OnVerificationCompleted(PhoneAuthCredential p0)
         {
             System.Diagnostics.Debug.WriteLine("Verification completed");
@@ -66,8 +52,7 @@ namespace Roadside.Services
                     }
                     else if (task.IsCompleted)
                     {
-                        // Save the authentication token
-                        SaveAuthToken(task.Result.User.Uid);
+
                         _verificationCodeCompleteSource.SetResult(true);
                     }
                 });

@@ -1,4 +1,5 @@
 ﻿using Roadside.Services;
+using Roadside.Views;
 
 namespace Roadside
 {
@@ -9,18 +10,18 @@ namespace Roadside
         public MainPage(IAuthenticationService authenticationService)
         {
             InitializeComponent();
-            CheckAuthenticationAsync();
+
+            //check if user is already logged in
+            var savedMobileNumber = Preferences.Get("mobile_number", string.Empty);
+            if (!string.IsNullOrEmpty(savedMobileNumber))
+            {
+                // Directly navigate to NewPage1
+                Shell.Current.GoToAsync($"//{nameof(HomePage)}");
+            }
+
             _authenticationService = authenticationService;
         }
-        private async Task CheckAuthenticationAsync()
-        {
-            var authToken = await SecureStorage.GetAsync("auth_token");
-            if (!string.IsNullOrEmpty(authToken))
-            {
-                // Navigate to the next page if authenticated
-                await Navigation.PushAsync(new Views.NewPage1());
-            }
-        }
+       
 
         private async void Submit_Clicked(object sender, EventArgs e)
         {

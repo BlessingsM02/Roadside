@@ -3,8 +3,9 @@
     x:Class="Roadside.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:locals="clr-namespace:Roadside.Views"
     xmlns:local="clr-namespace:Roadside"
-    Shell.FlyoutBehavior="Disabled"
+    Shell.FlyoutBehavior="Flyout"
     Title="Roadside">
 
     <ShellContent
@@ -12,4 +13,22 @@
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage" />
 
+
+    <TabBar FlyoutDisplayOptions="AsMultipleItems">
+        <ShellContent
+            Title="Home"
+            ContentTemplate="{DataTemplate locals:HomePage}"
+            Icon="home"
+            Route="HomePage" />
+        <ShellContent
+            Title="History"
+            ContentTemplate="{DataTemplate locals:HistoryPage}"
+            Icon="history"
+            Route="HistoryPage" />
+        <ShellContent
+            Title="Profile"
+            ContentTemplate="{DataTemplate locals:ProfilePage}"
+            Icon="profile"
+            Route="ProfilePage" />
+    </TabBar>
 </Shell>

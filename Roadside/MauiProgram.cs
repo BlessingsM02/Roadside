@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Roadside.Services;
+using CommunityToolkit.Maui;
 
 
 namespace Roadside
@@ -12,6 +13,8 @@ namespace Roadside
 
             builder
                 .UseMauiApp<App>()
+                .UseMauiCommunityToolkit()
+                .UseMauiMaps()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
