@@ -1,8 +1,4 @@
-using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Maps;
-using static Microsoft.Maui.ApplicationModel.Permissions;
-
 namespace Roadside.Views;
 
 public partial class HomePage : ContentPage
@@ -34,17 +30,20 @@ public partial class HomePage : ContentPage
             var location = await Geolocation.GetLocationAsync(geolocationRequest);
 
             // Clear existing pins on the map
-            mat.Pins.Clear();
+            /* mat.Pins.Clear();
 
-            // Add a new pin for the current location
-            var pin = new Pin
-            {
-                Address = $"{location}",
-                Location = location,
-                Type = PinType.Place,
-                Label = "Current",
-            };
-            mat.Pins.Add(pin);
+             // Add a new pin for the current location
+             var pin = new Pin
+             {
+                 Address = $"{location}",
+                 Location = location,
+                 Type = PinType.Place,
+                 Label = "Current",
+             };
+             mat.Pins.Add(pin);*/
+
+            await Navigation.PushAsync(new RequestPage());
+
 
         }
         catch (Exception ex)

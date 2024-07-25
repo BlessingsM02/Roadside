@@ -1,22 +1,25 @@
-﻿using Firebase.Auth;
-using Firebase.Database;
+﻿using Firebase.Database;
 using Roadside.Models;
 
 namespace Roadside.ViewModels
 {
-    internal class ProfileViewModel : BindableObject
+    internal class RequestViewModel : BindableObject
     {
         private string _firstName;
         private string _lastName;
         private string _vehicleDescription;
         private string _plateNumber;
         private string _mobileNumber;
+        private string _logitude;
+        private string _latitude;
+        private string _date;
+        private string _status;
         private FirebaseClient _firebaseClient;
 
-        public ProfileViewModel()
+        public RequestViewModel()
         {
             _firebaseClient = new FirebaseClient("https://roadside1-1ffd7-default-rtdb.firebaseio.com/");
-            LoadUserProfileCommand = new Command(async () => await LoadUserProfileAsync());
+            LoadUserProfileCommand = new Command(async () => await LoadUserDetailsAsync());
             LoadUserProfileCommand.Execute(null);
         }
 
@@ -70,9 +73,10 @@ namespace Roadside.ViewModels
             }
         }
 
+
         public Command LoadUserProfileCommand { get; }
 
-        private async Task LoadUserProfileAsync()
+        private async Task LoadUserDetailsAsync()
         {
             // Retrieve the mobile number from preferences
             var mobileNumber = Preferences.Get("mobile_number", string.Empty);

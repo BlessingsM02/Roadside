@@ -10,8 +10,6 @@ namespace Roadside.Models
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public string VehicleDescription { get; set; }
-        public string PlateNumber { get; set; }
         public string MobileNumber { get; set; }
     }
 

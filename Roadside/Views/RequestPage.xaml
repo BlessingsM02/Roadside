@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Roadside.Views.RequestPage"
+             Title="Confirm Request Details"
+             Shell.FlyoutBehavior="Disabled"
+             xmlns:local="clr-namespace:Roadside.ViewModels"
+             Shell.TabBarIsVisible="False">
+    
+    <ContentPage.BindingContext>
+        <local:ProfileViewModel />
+    </ContentPage.BindingContext>
+    
+    <VerticalStackLayout Padding="20"
+                         Spacing="15">
+      
+        <Border/>
+        <Label 
+            Text="Vehicle Details"
+            VerticalOptions="Center"
+            FontSize="Medium"
+            FontAttributes="Bold"
+            HorizontalOptions="Center" />
+
+        <Label
+            Text="Vehicle Description:"
+            VerticalOptions="Start"/>
+        <Entry
+            IsEnabled="False"
+            VerticalOptions="End"
+            Placeholder="{Binding VehicleDescription}"/>
+
+        <Label
+            Text="Plate Number"
+            VerticalOptions="Start"/>
+        <Entry
+            IsEnabled="False"
+            VerticalOptions="End"
+            Placeholder="{Binding PlateNumber}"/>
+
+        <Label 
+            Text="Wrong Details?"
+            VerticalOptions="Center"
+            HorizontalOptions="Center"/>
+        <CheckBox
+            x:Name="yesCheckBox"/>
+ 
+    </VerticalStackLayout>
+</ContentPage>

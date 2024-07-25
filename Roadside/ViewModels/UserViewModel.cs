@@ -1,9 +1,10 @@
-﻿using Firebase.Auth;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using Firebase.Database;
 using Firebase.Database.Query;
 using Roadside.Models;
 using Roadside.Views;
+
+
 namespace Roadside.ViewModels
 {
     internal class UserViewModel : BindableObject
@@ -64,47 +65,80 @@ namespace Roadside.ViewModels
 
         private async Task SubmitAsync()
         {
-            // Retrieve the mobile number from preferences
-            var mobileNumber = Preferences.Get("mobile_number", string.Empty);
-
-            if (!string.IsNullOrEmpty(mobileNumber))
+            if (string.IsNullOrEmpty(FirstName) || string.IsNullOrEmpty(LastName) ||
+                string.IsNullOrEmpty(VehicleDescription) || string.IsNullOrEmpty(PlateNumber))
             {
-                // Check if a user with the same mobile number already exists
-                var users = await _firebaseClient
-                    .Child("users")
-                    .OnceAsync<Users>();
+                await Application.Current.MainPage.DisplayAlert("Error", "All fields are required.", "OK");
+                return;
+            }
 
-                var userExists = users.Any(u => u.Object.MobileNumber == mobileNumber);
+            try
+            {
+                var mobileNumber = Preferences.Get("mobile_number", string.Empty);
 
-                if (userExists)
+                if (!string.IsNullOrEmpty(mobileNumber))
                 {
-                    await Application.Current.MainPage.DisplayAlert("Error", "A user with this mobile number already exists.", "OK");
-                    await Shell.Current.GoToAsync($"//{nameof(ProfilePage)}");
+                    bool userExists = await SaveUser(mobileNumber);
+                    if (userExists)
+                    {
+                        await SaveVehicle(mobileNumber);
+                        await Application.Current.MainPage.DisplayAlert("Success", "User and vehicle information saved successfully.", "OK");
+                        await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
+                    }
                 }
                 else
                 {
-                    var user = new Users
-                    {
-                        FirstName = FirstName,
-                        LastName = LastName,
-                        VehicleDescription = VehicleDescription,
-                        PlateNumber = PlateNumber,
-                        MobileNumber = mobileNumber // Add mobile number to the user data
-                    };
-
-                    await _firebaseClient
-                        .Child("users")
-                        .PostAsync(user);
-
-                    await Application.Current.MainPage.DisplayAlert("Success", "User information saved successfully.", "OK");
+                    await Application.Current.MainPage.DisplayAlert("Error", "Mobile number not found in preferences.", "OK");
                 }
             }
-            else
+            catch (Exception ex)
             {
-                // Handle the case where mobile number is not found in preferences
-                await Application.Current.MainPage.DisplayAlert("Error", "Mobile number not found in preferences.", "OK");
+                await Application.Current.MainPage.DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");
             }
         }
 
+        private async Task<bool> SaveUser(string mobileNumber)
+        {
+            // Check if a user with the same mobile number already exists
+            var users = await _firebaseClient
+                .Child("users")
+                .OnceAsync<Users>();
+
+            var user = users.FirstOrDefault(u => u.Object.MobileNumber == mobileNumber);
+
+            if (user != null)
+            {
+                await Application.Current.MainPage.DisplayAlert("Error", "A user with this mobile number already exists.", "OK");
+                await Shell.Current.GoToAsync($"//{nameof(ProfilePage)}");
+                return false;
+            }
+
+            var newUser = new Users
+            {
+                FirstName = FirstName,
+                LastName = LastName,
+                MobileNumber = mobileNumber
+            };
+
+            await _firebaseClient
+                .Child("users")
+                .PostAsync(newUser);
+
+            return true;
+        }
+
+        private async Task SaveVehicle(string mobileNumber)
+        {
+            var vehicle = new Vehicle
+            {
+                UserId = mobileNumber,
+                VehicleDescription = VehicleDescription,
+                PlateNumber = PlateNumber
+            };
+
+            await _firebaseClient
+                .Child("vehicles")
+                .PostAsync(vehicle);
+        }
     }
 }
