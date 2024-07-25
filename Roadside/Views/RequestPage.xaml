@@ -8,13 +8,13 @@
              Shell.TabBarIsVisible="False">
     
     <ContentPage.BindingContext>
-        <local:ProfileViewModel />
+        <local:RequestViewModel />
     </ContentPage.BindingContext>
     
     <VerticalStackLayout Padding="20"
                          Spacing="15">
       
-        <Border/>
+
         <Label 
             Text="Vehicle Details"
             VerticalOptions="Center"
@@ -37,13 +37,12 @@
             IsEnabled="False"
             VerticalOptions="End"
             Placeholder="{Binding PlateNumber}"/>
+        
 
-        <Label 
-            Text="Wrong Details?"
-            VerticalOptions="Center"
-            HorizontalOptions="Center"/>
-        <CheckBox
-            x:Name="yesCheckBox"/>
- 
+        <Button
+            Text="Confirm"
+            Command="{Binding SubmitRequestCommand}"/>
+
+
     </VerticalStackLayout>
 </ContentPage>
