@@ -99,10 +99,12 @@ namespace Roadside.ViewModels
 
         private async Task LoadUserDetailsAsync()
         {
+            // Retrieve the mobile number from preferences
             var mobileNumber = Preferences.Get("mobile_number", string.Empty);
 
             if (!string.IsNullOrEmpty(mobileNumber))
             {
+                // Retrieve user details
                 var users = await _firebaseClient
                     .Child("users")
                     .OnceAsync<Users>();
@@ -115,6 +117,7 @@ namespace Roadside.ViewModels
                     LastName = user.LastName;
                     MobileNumber = user.MobileNumber;
 
+                    // Retrieve vehicle details using the user ID (mobile number)
                     var vehicles = await _firebaseClient
                         .Child("vehicles")
                         .OnceAsync<Vehicle>();
@@ -128,16 +131,19 @@ namespace Roadside.ViewModels
                     }
                     else
                     {
+                        // Handle the case where the vehicle is not found
                         await Application.Current.MainPage.DisplayAlert("Error", "Vehicle not found.", "OK");
                     }
                 }
                 else
                 {
+                    // Handle the case where the user is not found
                     await Application.Current.MainPage.DisplayAlert("Error", "User not found.", "OK");
                 }
             }
             else
             {
+                // Handle the case where the mobile number is not found in preferences
                 await Application.Current.MainPage.DisplayAlert("Error", "Mobile number not found in preferences.", "OK");
             }
         }
@@ -191,6 +197,7 @@ namespace Roadside.ViewModels
                 return;
             }
 
+            // Get the current location
             await GetLocationAsync();
 
             if (string.IsNullOrEmpty(Latitude) || string.IsNullOrEmpty(Longitude))
@@ -205,15 +212,9 @@ namespace Roadside.ViewModels
 
             var existingRequest = existingRequests.FirstOrDefault(r => r.Object.MobileNumber == MobileNumber && r.Object.Status == "Pending");
 
-            if (existingRequest != null)
-            {
-                await Application.Current.MainPage.DisplayAlert("Error", "You already have a pending request.", "OK");
-                return;
-            }
-
             var request = new Request
             {
-                RequestId = Guid.NewGuid().ToString(),
+                RequestId = existingRequest?.Object.RequestId ?? Guid.NewGuid().ToString(),
                 MobileNumber = MobileNumber,
                 Latitude = Latitude,
                 Longitude = Longitude,
@@ -223,9 +224,21 @@ namespace Roadside.ViewModels
 
             try
             {
-                await _firebaseClient
-                    .Child("requests")
-                    .PostAsync(request);
+                if (existingRequest != null)
+                {
+                    // Update existing request
+                    await _firebaseClient
+                        .Child("requests")
+                        .Child(existingRequest.Key)
+                        .PutAsync(request);
+                }
+                else
+                {
+                    // Create new request
+                    await _firebaseClient
+                        .Child("requests")
+                        .PostAsync(request);
+                }
 
                 await Application.Current.MainPage.DisplayAlert("Success", "Request submitted successfully.", "OK");
                 await App.Current.MainPage.Navigation.PushAsync(new LoadingPage());
