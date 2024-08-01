@@ -1,7 +1,7 @@
 ﻿using Firebase.Database;
+using Firebase.Database.Query;
 using Roadside.Models;
 using Roadside.Views;
-using Firebase.Database.Query;
 
 namespace Roadside.ViewModels
 {
@@ -14,7 +14,7 @@ namespace Roadside.ViewModels
         private string _mobileNumber;
         private string _latitude;
         private string _longitude;
-        private FirebaseClient _firebaseClient;
+        private readonly FirebaseClient _firebaseClient;
 
         public RequestViewModel()
         {
@@ -99,12 +99,10 @@ namespace Roadside.ViewModels
 
         private async Task LoadUserDetailsAsync()
         {
-            // Retrieve the mobile number from preferences
             var mobileNumber = Preferences.Get("mobile_number", string.Empty);
 
             if (!string.IsNullOrEmpty(mobileNumber))
             {
-                // Retrieve user details
                 var users = await _firebaseClient
                     .Child("users")
                     .OnceAsync<Users>();
@@ -117,7 +115,6 @@ namespace Roadside.ViewModels
                     LastName = user.LastName;
                     MobileNumber = user.MobileNumber;
 
-                    // Retrieve vehicle details using the user ID (mobile number)
                     var vehicles = await _firebaseClient
                         .Child("vehicles")
                         .OnceAsync<Vehicle>();
@@ -131,19 +128,16 @@ namespace Roadside.ViewModels
                     }
                     else
                     {
-                        // Handle the case where the vehicle is not found
                         await Application.Current.MainPage.DisplayAlert("Error", "Vehicle not found.", "OK");
                     }
                 }
                 else
                 {
-                    // Handle the case where the user is not found
                     await Application.Current.MainPage.DisplayAlert("Error", "User not found.", "OK");
                 }
             }
             else
             {
-                // Handle the case where the mobile number is not found in preferences
                 await Application.Current.MainPage.DisplayAlert("Error", "Mobile number not found in preferences.", "OK");
             }
         }
@@ -152,7 +146,8 @@ namespace Roadside.ViewModels
         {
             try
             {
-                var location = await Geolocation.GetLastKnownLocationAsync();
+                var request = new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10));
+                var location = await Geolocation.GetLocationAsync(request);
 
                 if (location != null)
                 {
@@ -161,7 +156,6 @@ namespace Roadside.ViewModels
                 }
                 else
                 {
-                    var request = new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10));
                     location = await Geolocation.GetLocationAsync(request);
 
                     if (location != null)
@@ -171,24 +165,20 @@ namespace Roadside.ViewModels
                     }
                 }
             }
-            catch (FeatureNotSupportedException fnsEx)
+            catch (FeatureNotSupportedException)
             {
-                // Handle not supported on device exception
                 await Application.Current.MainPage.DisplayAlert("Error", "Geolocation is not supported on this device.", "OK");
             }
-            catch (FeatureNotEnabledException fneEx)
+            catch (FeatureNotEnabledException)
             {
-                // Handle not enabled on device exception
                 await Application.Current.MainPage.DisplayAlert("Error", "Geolocation is not enabled on this device.", "OK");
             }
-            catch (PermissionException pEx)
+            catch (PermissionException)
             {
-                // Handle permission exception
                 await Application.Current.MainPage.DisplayAlert("Error", "Geolocation permissions are denied.", "OK");
             }
             catch (Exception ex)
             {
-                // Unable to get location
                 await Application.Current.MainPage.DisplayAlert("Error", $"Unable to get location: {ex.Message}", "OK");
             }
         }
@@ -201,12 +191,23 @@ namespace Roadside.ViewModels
                 return;
             }
 
-            // Get the current location
             await GetLocationAsync();
 
             if (string.IsNullOrEmpty(Latitude) || string.IsNullOrEmpty(Longitude))
             {
                 await Application.Current.MainPage.DisplayAlert("Error", "Unable to get location.", "OK");
+                return;
+            }
+
+            var existingRequests = await _firebaseClient
+                .Child("requests")
+                .OnceAsync<Request>();
+
+            var existingRequest = existingRequests.FirstOrDefault(r => r.Object.MobileNumber == MobileNumber && r.Object.Status == "Pending");
+
+            if (existingRequest != null)
+            {
+                await Application.Current.MainPage.DisplayAlert("Error", "You already have a pending request.", "OK");
                 return;
             }
 
