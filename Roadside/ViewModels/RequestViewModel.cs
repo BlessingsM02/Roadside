@@ -11,6 +11,7 @@ namespace Roadside.ViewModels
         private string _lastName;
         private string _vehicleDescription;
         private string _plateNumber;
+        private string _serviceProviderId;
         private string _mobileNumber;
         private string _latitude;
         private string _longitude;
@@ -23,7 +24,15 @@ namespace Roadside.ViewModels
             SubmitRequestCommand = new Command(async () => await SubmitRequestAsync());
             LoadUserProfileCommand.Execute(null);
         }
-
+        public string ServiceProviderId
+        {
+            get => _serviceProviderId;
+            set
+            {
+                _serviceProviderId = value;
+                OnPropertyChanged();
+            }
+        }
         public string FirstName
         {
             get => _firstName;
@@ -206,47 +215,10 @@ namespace Roadside.ViewModels
                 return;
             }
 
-            var existingRequests = await _firebaseClient
-                .Child("requests")
-                .OnceAsync<Request>();
+            //Redirect to LoadingPage
+            //await Application.Current.MainPage.DisplayAlert("Success", "Request submitted successfully.", "OK");
+            await App.Current.MainPage.Navigation.PushAsync(new LoadingPage());
 
-            var existingRequest = existingRequests.FirstOrDefault(r => r.Object.MobileNumber == MobileNumber && r.Object.Status == "Pending");
-
-            var request = new Request
-            {
-                RequestId = existingRequest?.Object.RequestId ?? Guid.NewGuid().ToString(),
-                MobileNumber = MobileNumber,
-                Latitude = Latitude,
-                Longitude = Longitude,
-                Date = DateTime.UtcNow,
-                Status = "Pending"
-            };
-
-            try
-            {
-                if (existingRequest != null)
-                {
-                    // Update existing request
-                    await _firebaseClient
-                        .Child("requests")
-                        .Child(existingRequest.Key)
-                        .PutAsync(request);
-                }
-                else
-                {
-                    // Create new request
-                    await _firebaseClient
-                        .Child("requests")
-                        .PostAsync(request);
-                }
-
-                await Application.Current.MainPage.DisplayAlert("Success", "Request submitted successfully.", "OK");
-                await App.Current.MainPage.Navigation.PushAsync(new LoadingPage());
-            }
-            catch (Exception ex)
-            {
-                await Application.Current.MainPage.DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");
-            }
         }
     }
 }

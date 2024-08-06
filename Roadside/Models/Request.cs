@@ -10,5 +10,6 @@ namespace Roadside.Models
         public string Longitude { get; set; }
         public DateTime Date { get; set; }
         public string Status { get; set; }
+        public string ServiceProviderId { get; set; }
     }
 }

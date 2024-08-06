@@ -12,7 +12,8 @@
                      x:Name="mobileinfo">
 
             <Entry Placeholder="Enter mobile number" 
-           x:Name="MobileEntry" />
+                   x:Name="MobileEntry"
+                   Keyboard="Numeric"/>
             <Button Text="Submit" 
                     x:Name="btnS"
             Clicked="Submit_Clicked" />
