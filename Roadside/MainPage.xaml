@@ -13,7 +13,7 @@
 
             <Entry Placeholder="Enter mobile number" 
                    x:Name="MobileEntry"
-                   Keyboard="Numeric"/>
+                   Keyboard="Telephone"/>
             <Button Text="Submit" 
                     x:Name="btnS"
             Clicked="Submit_Clicked" />

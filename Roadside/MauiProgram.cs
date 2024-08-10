@@ -13,6 +13,7 @@ namespace Roadside
 
             builder
                 .UseMauiApp<App>()
+
                 .UseMauiCommunityToolkit()
                 .UseMauiMaps()
                 .ConfigureFonts(fonts =>

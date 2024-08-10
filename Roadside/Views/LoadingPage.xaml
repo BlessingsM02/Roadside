@@ -14,12 +14,11 @@
                 <DataTemplate>
                     <StackLayout Padding="20"
                                  Spacing="20">
-                        <!--<Label Text="{Binding Id}" FontSize="Medium" />
-                        <Label Text="{Binding Latitude}" FontSize="Small" />
-                        <Label Text="{Binding Longitude}" FontSize="Small" />
-                        <Label Text="{Binding FirstName}" FontSize="Small" />-->
-                        <Label Text="{Binding LastName}" FontSize="Medium" />
-                        <Label Text="{Binding MobileNumber}" FontSize="Small" />
+                        <Button
+                                Text="{Binding MobileNumber}"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:LoadingViewModel}}, Path=ButtonClickedCommand}"
+                                CommandParameter="{Binding .}" />
+
                     </StackLayout>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

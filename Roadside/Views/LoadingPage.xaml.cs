@@ -9,4 +9,6 @@ public partial class LoadingPage : ContentPage
 		InitializeComponent();
 		BindingContext = new LoadingViewModel();
     }
+
+   
 }
