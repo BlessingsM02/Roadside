@@ -2,30 +2,48 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Roadside.MainPage"
+             xmlns:sf="clr-namespace:Syncfusion.Maui.Core;assembly=Syncfusion.Maui.Core"
              Shell.FlyoutBehavior="Disabled"
              Title="Login">
 
-    <ScrollView>
+ 
         <VerticalStackLayout Spacing="25"
                      Padding="30,0"
                      VerticalOptions="Center"
                      x:Name="mobileinfo">
 
-            <Entry Placeholder="Enter mobile number" 
-                   x:Name="MobileEntry"
-                   Keyboard="Telephone"/>
+        <sf:SfTextInputLayout Hint="Mobile Number"
+                              OutlineCornerRadius="9"
+                              ContainerType="Outlined"
+                              ContainerBackground="White">
+            <Entry Placeholder="Enter Mobile Number"
+                    x:Name="MobileEntry"
+                
+                    Keyboard="Telephone"/>
+        </sf:SfTextInputLayout>
+
+
+
             <Button Text="Submit" 
                     x:Name="btnS"
             Clicked="Submit_Clicked" />
 
 
             <VerticalStackLayout IsVisible="False" x:Name="verificationInfo">
-                <Entry x:Name="codeEntry" />
+
+            <sf:SfTextInputLayout Hint="OTP"
+                                  OutlineCornerRadius="9"
+                                  ContainerType="Outlined"
+                                  ContainerBackground="White">
+                <Entry Placeholder="Enter OTP"
+                    x:Name="codeEntry" />
+            </sf:SfTextInputLayout>
+            
                 <Button Text="Verify" 
                 x:Name="btnVerify" 
                 Clicked="btnVerify_Clicked" />
             </VerticalStackLayout>
         </VerticalStackLayout>
-    </ScrollView>
+
 
 </ContentPage>

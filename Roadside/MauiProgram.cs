@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Roadside.Services;
+using Syncfusion.Maui.Core.Hosting;
 using CommunityToolkit.Maui;
 
 
@@ -16,6 +17,7 @@ namespace Roadside
 
                 .UseMauiCommunityToolkit()
                 .UseMauiMaps()
+                .ConfigureSyncfusionCore()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
