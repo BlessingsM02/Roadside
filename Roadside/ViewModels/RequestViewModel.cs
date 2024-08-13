@@ -202,7 +202,7 @@ namespace Roadside.ViewModels
         {
             if (string.IsNullOrEmpty(MobileNumber))
             {
-                await Application.Current.MainPage.DisplayAlert("Error", "Mobile number is required.", "OK");
+                await Application.Current.MainPage.DisplayAlert("Error", "There was a problem with your mobile number", "OK");
                 return;
             }
 

@@ -1,6 +1,5 @@
 ﻿using Firebase.Database;
 using Firebase.Database.Query;
-using Roadside.Models;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
@@ -48,73 +47,20 @@ namespace Roadside.ViewModels
                         .PostAsync(requestData);
 
                     string key = result.Key; // The key of the newly created record
-
                     await Application.Current.MainPage.DisplayAlert("Success", "Data sent to Firebase.", "OK");
-
-                    // Start continuously checking the request status
-                    StartCheckingRequest();
 
                     // Schedule a task to delete the record after 1 minute if still "Pending"
                     await Task.Delay(TimeSpan.FromMinutes(1));
                     await CheckAndDeletePendingRecord(key);
+
+
                 }
                 catch (Exception ex)
                 {
+                    // Handle exceptions here
                     await Application.Current.MainPage.DisplayAlert("Error", $"Failed to send data: {ex.Message}", "OK");
                 }
             }
-        }
-
-        private CancellationTokenSource _requestCancellationTokenSource;
-
-        private void StartCheckingRequest()
-        {
-
-            _requestCancellationTokenSource = new CancellationTokenSource();
-            Task.Run(async () =>
-            {
-                while (!_requestCancellationTokenSource.Token.IsCancellationRequested)
-                {
-                    await CheckRequestStatus();
-                    await Task.Delay(TimeSpan.FromSeconds(5), _requestCancellationTokenSource.Token); // Check every 5 seconds
-                }
-            }, _requestCancellationTokenSource.Token);
-        }
-
-        private async Task CheckRequestStatus()
-        {
-            try
-            {
-                var mobileNumber = Preferences.Get("mobile_number", string.Empty);
-                var records = await _firebaseClient
-                    .Child("requests")
-                    .OnceAsync<RequestData>();
-
-                var record = records.FirstOrDefault(c => c.Object.DriverId == mobileNumber);
-
-                if (record != null)
-                {
-                    if (record.Object.Status == "Accepted")
-                    {
-                        await Application.Current.MainPage.DisplayAlert("Request Accepted", "Your request has been accepted.", "OK");
-                        StopCheckingRequest(); // Stop checking if accepted
-                    }
-                    else if (record.Object.Status == "Declined")
-                    {
-                        await Application.Current.MainPage.DisplayAlert("Request Declined", "Your request has been declined.", "OK");
-                        StopCheckingRequest(); // Stop checking if declined
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                await Application.Current.MainPage.DisplayAlert("Error", $"Failed to check request status: {ex.Message}", "OK");
-            }
-        }
-
-        private void StopCheckingRequest()
-        {
-            _requestCancellationTokenSource?.Cancel();
         }
 
         private async Task CheckAndDeletePendingRecord(string key)
@@ -142,7 +88,7 @@ namespace Roadside.ViewModels
             catch (Exception ex)
             {
                 // Handle exceptions here
-                await Application.Current.MainPage.DisplayAlert("Error",  "Something went wrong", "OK");
+                await Application.Current.MainPage.DisplayAlert("Error", "Something went wrong", "OK");
             }
         }
 
@@ -157,9 +103,7 @@ namespace Roadside.ViewModels
                 OnPropertyChanged();
             }
         }
-
         public Command LoadAllWorkingCommand { get; }
-
         private async Task LoadAllWorkingAsync()
         {
             try
@@ -167,9 +111,7 @@ namespace Roadside.ViewModels
                 var workingRecords = await _firebaseClient
                     .Child("working")
                     .OnceAsync<Working>();
-
                 var allWorkingWithUser = new ObservableCollection<WorkingWithUser>();
-
                 foreach (var record in workingRecords)
                 {
                     var user = await GetUserDetailsAsync(record.Object.Id);
@@ -183,7 +125,6 @@ namespace Roadside.ViewModels
                         MobileNumber = user?.MobileNumber
                     });
                 }
-
                 AllWorking = allWorkingWithUser;
             }
             catch (Exception ex)
@@ -192,7 +133,6 @@ namespace Roadside.ViewModels
                 await Application.Current.MainPage.DisplayAlert("Error", $"Unable to load data: {ex.Message}", "OK");
             }
         }
-
         private async Task<User> GetUserDetailsAsync(string mobileNumber)
         {
             try
@@ -200,7 +140,6 @@ namespace Roadside.ViewModels
                 var users = await _firebaseClient
                     .Child("users")
                     .OnceAsync<User>();
-
                 return users.FirstOrDefault(u => u.Object.MobileNumber == mobileNumber)?.Object;
             }
             catch (Exception ex)
@@ -211,7 +150,6 @@ namespace Roadside.ViewModels
             }
         }
     }
-
     public class WorkingWithUser
     {
         public string Id { get; set; }
@@ -221,14 +159,12 @@ namespace Roadside.ViewModels
         public string LastName { get; set; }
         public string MobileNumber { get; set; }
     }
-
     public class User
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string MobileNumber { get; set; }
     }
-
     public class Working
     {
         public string Id { get; set; }
