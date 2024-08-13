@@ -2,6 +2,7 @@
 using Roadside.Services;
 using Syncfusion.Maui.Core.Hosting;
 using CommunityToolkit.Maui;
+using The49.Maui.BottomSheet;
 
 
 namespace Roadside
@@ -17,6 +18,7 @@ namespace Roadside
 
                 .UseMauiCommunityToolkit()
                 .UseMauiMaps()
+                .UseBottomSheet()
                 .ConfigureSyncfusionCore()
                 .ConfigureFonts(fonts =>
                 {

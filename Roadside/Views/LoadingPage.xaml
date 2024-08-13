@@ -2,7 +2,9 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Roadside.ViewModels"
-             x:Class="Roadside.Views.LoadingPage">
+             x:Class="Roadside.Views.LoadingPage"
+             Shell.TabBarIsVisible="False"
+             Title="Service Providers">
 
     <ContentPage.BindingContext>
         <vm:LoadingViewModel />

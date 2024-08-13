@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Roadside.Views.RequestPage"
              Title="Confirm Request Details"
+             xmlns:sf="clr-namespace:Syncfusion.Maui.Core;assembly=Syncfusion.Maui.Core"
              Shell.FlyoutBehavior="Disabled"
              xmlns:local="clr-namespace:Roadside.ViewModels"
              Shell.TabBarIsVisible="False">
@@ -13,31 +14,30 @@
     
     <VerticalStackLayout Padding="20"
                          Spacing="15">
-      
 
-        <Label 
-            Text="Vehicle Details"
-            VerticalOptions="Center"
-            FontSize="Medium"
-            FontAttributes="Bold"
-            HorizontalOptions="Center" />
-
-        <Label
-            Text="Vehicle Description:"
-            VerticalOptions="Start"/>
-        <Entry
-            IsEnabled="False"
-            VerticalOptions="End"
-            Placeholder="{Binding VehicleDescription}"/>
-
-        <Label
-            Text="Plate Number"
-            VerticalOptions="Start"/>
-        <Entry
-            IsEnabled="False"
-            VerticalOptions="End"
-            Placeholder="{Binding PlateNumber}"/>
+        <sf:SfTextInputLayout Hint="Vehicle Description:"
+                  ContainerType="Outlined"
+                  OutlineCornerRadius="9"
+                  ContainerBackground="White"
+                  HeightRequest="80"
+                  IsHintAlwaysFloated="True">
+            <Entry Text="{Binding VehicleDescription}"
+                   PlaceholderColor="Gray"
+                   FontAttributes="Bold"
+                   IsReadOnly="True"/>
+        </sf:SfTextInputLayout>
         
+        <sf:SfTextInputLayout Hint="Plate Number:"
+                  ContainerType="Outlined"
+                  OutlineCornerRadius="9"
+                  ContainerBackground="White"
+                  HeightRequest="80"
+                  IsHintAlwaysFloated="True">
+            <Entry Text="{Binding PlateNumber}"
+                   PlaceholderColor="Gray"
+                   FontAttributes="Bold"
+                   IsReadOnly="True"/>
+        </sf:SfTextInputLayout>
 
         <Button
             Text="Confirm"

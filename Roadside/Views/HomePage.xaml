@@ -9,12 +9,11 @@
 
 
 
-    <Grid>
+    <Grid Margin="10">
         <maps:Map x:Name="mat"
                   IsShowingUser="True"
-                  VerticalOptions="FillAndExpand"
-                  HorizontalOptions="FillAndExpand"
-                   />
+                  VerticalOptions="Start"
+                  />
         <Button 
             Text="Request"
             VerticalOptions="End"

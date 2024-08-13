@@ -17,8 +17,9 @@ namespace Roadside.ViewModels
 
         public UserViewModel()
         {
-            SubmitCommand = new Command(async () => await SubmitAsync());
             _firebaseClient = new FirebaseClient("https://roadside1-1ffd7-default-rtdb.firebaseio.com/");
+            SubmitCommand = new Command(async () => await SubmitAsync());
+            CheckUserExistsAsync();
         }
 
         public string FirstName
@@ -63,6 +64,30 @@ namespace Roadside.ViewModels
 
         public ICommand SubmitCommand { get; }
 
+        private async Task CheckUserExistsAsync()
+        {
+            var mobileNumber = Preferences.Get("mobile_number", string.Empty);
+
+            if (!string.IsNullOrEmpty(mobileNumber))
+            {
+                var users = await _firebaseClient
+                    .Child("users")
+                    .OnceAsync<Users>();
+
+                var user = users.FirstOrDefault(u => u.Object.MobileNumber == mobileNumber);
+
+                if (user != null)
+                {
+                    await Application.Current.MainPage.DisplayAlert("Info", "A user with this mobile number already exists.", "OK");
+                    await Shell.Current.GoToAsync($"//{nameof(ProfilePage)}");
+                }
+            }
+            else
+            {
+                await Application.Current.MainPage.DisplayAlert("Error", "Mobile number not found in preferences.", "OK");
+            }
+        }
+
         private async Task SubmitAsync()
         {
             if (string.IsNullOrEmpty(FirstName) || string.IsNullOrEmpty(LastName) ||
@@ -82,13 +107,13 @@ namespace Roadside.ViewModels
                     if (userExists)
                     {
                         await SaveVehicle(mobileNumber);
-                        await Application.Current.MainPage.DisplayAlert("Success", "User and vehicle information saved successfully.", "OK");
+                        await Application.Current.MainPage.DisplayAlert("Success", "Information saved successfully.", "OK");
                         await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
                     }
                 }
                 else
                 {
-                    await Application.Current.MainPage.DisplayAlert("Error", "Mobile number not found in preferences.", "OK");
+                    await Application.Current.MainPage.DisplayAlert("Error", "There was a problem with your mobile number", "OK");
                 }
             }
             catch (Exception ex)
@@ -99,7 +124,6 @@ namespace Roadside.ViewModels
 
         private async Task<bool> SaveUser(string mobileNumber)
         {
-            // Check if a user with the same mobile number already exists
             var users = await _firebaseClient
                 .Child("users")
                 .OnceAsync<Users>();
@@ -108,7 +132,7 @@ namespace Roadside.ViewModels
 
             if (user != null)
             {
-                await Application.Current.MainPage.DisplayAlert("Error", "A user with this mobile number already exists.", "OK");
+                await Application.Current.MainPage.DisplayAlert("Alert", "A user with this mobile number already exists.", "OK");
                 await Shell.Current.GoToAsync($"//{nameof(ProfilePage)}");
                 return false;
             }
@@ -141,4 +165,5 @@ namespace Roadside.ViewModels
                 .PostAsync(vehicle);
         }
     }
+
 }

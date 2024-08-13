@@ -15,68 +15,67 @@
 
     <VerticalStackLayout Spacing="20" Padding="20">
         <sf:SfTextInputLayout Hint="First Name:"
-                              ContainerType="Outlined"
-                              OutlineCornerRadius="9"
-                              ContainerBackground="White"
-                              HeightRequest="80"
-                              IsHintAlwaysFloated="True">
-            <Entry Placeholder="{Binding FirstName}"
-                   PlaceholderColor="Gray"
-                   FontAttributes="Bold"
-                   IsReadOnly="True"/>
+                          ContainerType="Outlined"
+                          OutlineCornerRadius="9"
+                          ContainerBackground="White"
+                          HeightRequest="80"
+                          IsHintAlwaysFloated="True">
+            <Entry Text="{Binding FirstName}"
+               PlaceholderColor="Gray"
+               FontAttributes="Bold"
+               IsReadOnly="{Binding IsReadOnly}"/>
         </sf:SfTextInputLayout>
 
         <sf:SfTextInputLayout Hint="Last Name:"
-                              ContainerBackground="White"
-                              ContainerType="Outlined"
-                              OutlineCornerRadius="9"
-                              HeightRequest="80"
-                              IsHintAlwaysFloated="True">
-            <Entry Placeholder="{Binding LastName}"
-                   PlaceholderColor="Gray"
-                   FontAttributes="Bold"
-                   IsReadOnly="True"/>
+                          ContainerBackground="White"
+                          ContainerType="Outlined"
+                          OutlineCornerRadius="9"
+                          HeightRequest="80"
+                          IsHintAlwaysFloated="True">
+            <Entry Text="{Binding LastName}"
+               PlaceholderColor="Gray"
+               FontAttributes="Bold"
+               IsReadOnly="{Binding IsReadOnly}"/>
         </sf:SfTextInputLayout>
-            
-        <sf:SfTextInputLayout Hint="Mobile Number:"
-                              ContainerBackground="White"
-                              ContainerType="Outlined"
-                              OutlineCornerRadius="9"
-                              HeightRequest="80"
-                              IsHintAlwaysFloated="True">
-            <Entry Placeholder="{Binding MobileNumber}"
-                   PlaceholderColor="Gray"
-                   FontAttributes="Bold"
-                   IsReadOnly="True"/>
-        </sf:SfTextInputLayout>
-           
-        <sf:SfTextInputLayout Hint="Vehicle Description:"
-                              ContainerBackground="White"
-                              ContainerType="Outlined"
-                              OutlineCornerRadius="9"
-                              HeightRequest="80"
-                              IsHintAlwaysFloated="True">
-            <Entry Placeholder="{Binding VehicleDescription}"
-                   PlaceholderColor="Gray"
-                   FontAttributes="Bold"
-                   IsReadOnly="True"/>
-        </sf:SfTextInputLayout>
-        
-        <sf:SfTextInputLayout Hint="Plate Number:"
-                              ContainerBackground="White"
-                              ContainerType="Outlined"
-                              OutlineCornerRadius="9"
-                              HeightRequest="80"
-                              IsHintAlwaysFloated="True">
-            <Entry Placeholder="{Binding PlateNumber}"
-                   PlaceholderColor="Gray"
-                   FontAttributes="Bold"
-                   IsReadOnly="True"/>
-        </sf:SfTextInputLayout>
-            
 
-            
-            <Button Text="Edit Profile" Command="{Binding LoadUserProfileCommand}" />
-            <Button Text="Logout" Clicked="OnLogoutButtonClicked" />
+        <sf:SfTextInputLayout Hint="Mobile Number:"
+                          ContainerBackground="White"
+                          ContainerType="Outlined"
+                          OutlineCornerRadius="9"
+                          HeightRequest="80"
+                          IsHintAlwaysFloated="True">
+            <Entry Text="{Binding MobileNumber}"
+               PlaceholderColor="Gray"
+               FontAttributes="Bold"
+               IsReadOnly="True"/>
+        </sf:SfTextInputLayout>
+
+        <sf:SfTextInputLayout Hint="Vehicle Description:"
+                          ContainerBackground="White"
+                          ContainerType="Outlined"
+                          OutlineCornerRadius="9"
+                          HeightRequest="80"
+                          IsHintAlwaysFloated="True">
+            <Entry Text="{Binding VehicleDescription}"
+               PlaceholderColor="Gray"
+               FontAttributes="Bold"
+               IsReadOnly="{Binding IsReadOnly}"/>
+        </sf:SfTextInputLayout>
+
+        <sf:SfTextInputLayout Hint="Plate Number:"
+                          ContainerBackground="White"
+                          ContainerType="Outlined"
+                          OutlineCornerRadius="9"
+                          HeightRequest="80"
+                          IsHintAlwaysFloated="True">
+            <Entry Text="{Binding PlateNumber}"
+               PlaceholderColor="Gray"
+               FontAttributes="Bold"
+               IsReadOnly="{Binding IsReadOnly}"/>
+        </sf:SfTextInputLayout>
+
+        <Button Text="{Binding EditButtonText}" Command="{Binding ToggleEditModeCommand}" />
+        <Button Text="Logout" Clicked="OnLogoutButtonClicked" />
     </VerticalStackLayout>
+
 </ContentPage>

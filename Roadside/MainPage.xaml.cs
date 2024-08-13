@@ -37,7 +37,7 @@ namespace Roadside
                 }
                 else
                 {
-                    await DisplayAlert("Error", "Invalid Mobile Number", "OK");
+                    await DisplayAlert("Error", "Enter a valid mobile number", "OK");
                 }
             }
             else
