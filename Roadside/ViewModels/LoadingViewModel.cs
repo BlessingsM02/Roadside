@@ -2,6 +2,7 @@
 using Firebase.Database.Query;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Roadside.Views;
 
 
 namespace Roadside.ViewModels
@@ -47,52 +48,22 @@ namespace Roadside.ViewModels
                         .PostAsync(requestData);
 
                     string key = result.Key; // The key of the newly created record
-                    await Application.Current.MainPage.DisplayAlert("Success", "Data sent to Firebase.", "OK");
 
-                    // Schedule a task to delete the record after 1 minute if still "Pending"
-                    await Task.Delay(TimeSpan.FromMinutes(1));
-                    await CheckAndDeletePendingRecord(key);
+                    await Application.Current.MainPage.DisplayAlert("Success", "Waiting for Service provide to respond", "OK");
 
-
+                    // Pass the key to the ResponsePage and navigate to response page
+                    await App.Current.MainPage.Navigation.PushAsync(new ResponsePage(key));
                 }
                 catch (Exception ex)
                 {
                     // Handle exceptions here
-                    await Application.Current.MainPage.DisplayAlert("Error", $"Failed to send data: {ex.Message}", "OK");
+                    await Application.Current.MainPage.DisplayAlert("Error", "There was a problem making a request, try again later", "OK");
                 }
             }
         }
 
-        private async Task CheckAndDeletePendingRecord(string key)
-        {
-            try
-            {
-                // Retrieve the record by key
-                var record = await _firebaseClient
-                    .Child("ClickedMobileNumbers")
-                    .Child(key)
-                    .OnceSingleAsync<dynamic>();
 
-                // Check if the status is still "Pending"
-                if (record != null && record.Status == "Pending")
-                {
-                    // Delete the record
-                    await _firebaseClient
-                        .Child("ClickedMobileNumbers")
-                        .Child(key)
-                        .DeleteAsync();
-
-                    await Application.Current.MainPage.DisplayAlert("Info", "Service Provide did not respond", "OK");
-                }
-            }
-            catch (Exception ex)
-            {
-                // Handle exceptions here
-                await Application.Current.MainPage.DisplayAlert("Error", "Something went wrong", "OK");
-            }
-        }
-
-
+    
 
         public ObservableCollection<WorkingWithUser> AllWorking
         {

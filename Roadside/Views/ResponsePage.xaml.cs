@@ -1,9 +1,13 @@
-namespace Roadside.Views;
+using Roadside.ViewModels;
 
-public partial class ResponsePage : ContentPage
+namespace Roadside.Views
 {
-	public ResponsePage()
-	{
-		InitializeComponent();
-	}
+    public partial class ResponsePage : ContentPage
+    {
+        public ResponsePage(string key)
+        {
+            InitializeComponent();
+            BindingContext = new ResponseViewModel(key);
+        }
+    }
 }

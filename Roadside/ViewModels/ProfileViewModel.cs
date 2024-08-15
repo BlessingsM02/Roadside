@@ -1,5 +1,4 @@
-﻿using Firebase.Auth;
-using Firebase.Database;
+﻿using Firebase.Database;
 using Firebase.Database.Query;
 using Roadside.Models;
 
@@ -14,7 +13,7 @@ namespace Roadside.ViewModels
         private string _mobileNumber;
         private bool _isReadOnly = true;
         private string _editButtonText = "Edit Profile";
-        private FirebaseClient _firebaseClient;
+        private readonly FirebaseClient _firebaseClient;
 
         public ProfileViewModel()
         {
@@ -103,37 +102,46 @@ namespace Roadside.ViewModels
 
             if (!string.IsNullOrEmpty(mobileNumber))
             {
-                var users = await _firebaseClient
-                    .Child("users")
-                    .OnceAsync<Users>();
-
-                var user = users.FirstOrDefault(u => u.Object.MobileNumber == mobileNumber)?.Object;
-
-                if (user != null)
+                try
                 {
-                    FirstName = user.FirstName;
-                    LastName = user.LastName;
-                    MobileNumber = user.MobileNumber;
+                    var users = await _firebaseClient
+                        .Child("users")
+                        .OnceAsync<Users>();
 
-                    var vehicles = await _firebaseClient
-                        .Child("vehicles")
-                        .OnceAsync<Vehicle>();
+                    var user = users.FirstOrDefault(u => u.Object.MobileNumber == mobileNumber)?.Object;
 
-                    var vehicle = vehicles.FirstOrDefault(v => v.Object.UserId == mobileNumber)?.Object;
-
-                    if (vehicle != null)
+                    if (user != null)
                     {
-                        VehicleDescription = vehicle.VehicleDescription;
-                        PlateNumber = vehicle.PlateNumber;
+                        FirstName = user.FirstName;
+                        LastName = user.LastName;
+                        MobileNumber = user.MobileNumber;
+
+                        var vehicles = await _firebaseClient
+                            .Child("vehicles")
+                            .OnceAsync<Vehicle>();
+
+                        var vehicle = vehicles.FirstOrDefault(v => v.Object.UserId == mobileNumber)?.Object;
+
+                        if (vehicle != null)
+                        {
+                            VehicleDescription = vehicle.VehicleDescription;
+                            PlateNumber = vehicle.PlateNumber;
+                        }
+                        else
+                        {
+                            await Application.Current.MainPage.DisplayAlert("Error", "Vehicle not found.", "OK");
+                        }
                     }
                     else
                     {
-                        await Application.Current.MainPage.DisplayAlert("Error", "Vehicle not found.", "OK");
+                        await Application.Current.MainPage.DisplayAlert("Error", "User not found.", "OK");
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    await Application.Current.MainPage.DisplayAlert("Error", "User not found.", "OK");
+                    // Handle exceptions, such as network errors
+                    await Application.Current.MainPage.DisplayAlert("Error", "Unable to load user data. Please check your internet connection.", "OK");
+                    return;
                 }
             }
             else
@@ -214,5 +222,4 @@ namespace Roadside.ViewModels
             }
         }
     }
-
 }
