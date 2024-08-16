@@ -49,7 +49,7 @@ namespace Roadside.ViewModels
 
                     string key = result.Key; // The key of the newly created record
 
-                    await Application.Current.MainPage.DisplayAlert("Success", "Waiting for Service provide to respond", "OK");
+                    //await Application.Current.MainPage.DisplayAlert("Success", "Waiting for Service provide to respond", "OK");
 
                     // Pass the key to the ResponsePage and navigate to response page
                     await App.Current.MainPage.Navigation.PushAsync(new ResponsePage(key));

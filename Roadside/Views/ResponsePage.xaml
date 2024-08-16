@@ -4,11 +4,12 @@
              x:Class="Roadside.Views.ResponsePage"
              Shell.TabBarIsVisible="False"
              Shell.NavBarIsVisible="False"
+             xmlns:core="clr-namespace:Syncfusion.Maui.Core;assembly=Syncfusion.Maui.Core"
              Title="ResponsePage">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+
+    <core:SfBusyIndicator IsRunning="True"
+                          Title="Waiting for a respose">
+        
+    </core:SfBusyIndicator>
+   
 </ContentPage>
