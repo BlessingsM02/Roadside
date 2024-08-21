@@ -5,7 +5,8 @@
              Title="HomePage"
              xmlns:local="clr-namespace:Roadside.ViewModels"
              xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
-             Shell.FlyoutBehavior="Disabled">
+             Shell.FlyoutBehavior="Disabled"
+             Shell.NavBarIsVisible="False">
 
 
 

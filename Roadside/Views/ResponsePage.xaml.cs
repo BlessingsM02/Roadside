@@ -7,7 +7,7 @@ namespace Roadside.Views
         public ResponsePage(string key)
         {
             InitializeComponent();
-            BindingContext = new ResponseViewModel(key);
+            BindingContext = new ResponseViewModel();
         }
     }
 }

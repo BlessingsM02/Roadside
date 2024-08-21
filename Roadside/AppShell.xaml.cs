@@ -15,7 +15,6 @@ namespace Roadside
             typeof(HistoryPage),
             typeof(ProfilePage),
             
-
         ];
 
         private static void RegisterRoutes()

@@ -30,7 +30,7 @@ public partial class HomePage : ContentPage
             var location = await Geolocation.GetLocationAsync(geolocationRequest);
 
             // Clear existing pins on the map
-            /* mat.Pins.Clear();
+            /*mat.Pins.Clear();
 
              // Add a new pin for the current location
              var pin = new Pin

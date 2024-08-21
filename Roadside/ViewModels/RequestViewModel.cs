@@ -227,7 +227,7 @@ namespace Roadside.ViewModels
 
             //Redirect to LoadingPage
             //await Application.Current.MainPage.DisplayAlert("Success", "Request submitted successfully.", "OK");
-            await App.Current.MainPage.Navigation.PushAsync(new LoadingPage());
+            await Shell.Current.GoToAsync($"//{nameof(LoadingPage)}");
 
         }
     }

@@ -10,76 +10,94 @@ namespace Roadside.ViewModels
         private readonly FirebaseClient _firebaseClient;
         private bool _stopChecking;
 
-        public ResponseViewModel(string key)
+        public ResponseViewModel()
         {
             _firebaseClient = new FirebaseClient("https://roadside-service-f65db-default-rtdb.firebaseio.com/");
-            CheckAndDeletePendingRecord(key);
-            PeriodicallyCheckRequestTable(key);
+            PeriodicallyCheckRequestTable();
         }
 
-        private async Task CheckAndDeletePendingRecord(string key)
+        private async Task PeriodicallyCheckRequestTable()
         {
             try
             {
-                // Wait for 1 minute before checking the status
-                await Task.Delay(TimeSpan.FromMinutes(1));
+                var elapsedTime = TimeSpan.Zero;
+                var checkInterval = TimeSpan.FromSeconds(5);
+                var maxWaitTime = TimeSpan.FromMinutes(1);
+                var mobileNumber = Preferences.Get("mobile_number", string.Empty);
 
-                // Retrieve the record by key
-                var record = await _firebaseClient
-                    .Child("ClickedMobileNumbers")
-                    .Child(key)
-                    .OnceSingleAsync<dynamic>();
-
-                // Check if the status is still "Pending"
-                if (record != null && record.Status == "Pending")
+                while (!_stopChecking && elapsedTime < maxWaitTime)
                 {
-                    // Delete the record
-                    await _firebaseClient
-                        .Child("ClickedMobileNumbers")
-                        .Child(key)
-                        .DeleteAsync();
+                    // Query all records in the "requests" table
+                    var requests = await _firebaseClient
+                        .Child("requests")
+                        .OnceAsync<dynamic>();
 
-                    await Application.Current.MainPage.DisplayAlert("Info", "Service Provider did not respond", "OK");
-                    await App.Current.MainPage.Navigation.PushAsync(new LoadingPage());
+                    foreach (var request in requests)
+                    {
+                        // Check if the user has made a request and the driver ID matches the mobile number in preferences
+                        if (request.Object.DriverId == mobileNumber)
+                        {
+                            // The driver has accepted the request
+                            
+                            await Application.Current.MainPage.DisplayAlert("Success", "Your request has been accepted.", "OK");
+                            _stopChecking = true; // Stop further checks
+
+                            // Navigate to the appropriate page if needed
+                            //await Navigation.PushAsync(new Views.NewPage1());
+                            await Shell.Current.GoToAsync($"//{nameof(RequestDetailsPage)}");
+                            //await App.Current.MainPage.Navigation.PushAsync(new RequestDetailsPage());
+                            return; // Exit the method as the request is accepted
+                        }
+                    }
+
+                    // Wait for the next check
+                    await Task.Delay(checkInterval);
+                    elapsedTime += checkInterval;
+                }
+
+                // If after the max wait time the request is still pending, delete the pending record
+                if (!_stopChecking)
+                {
+                    await DeletePendingRecord(mobileNumber);
                 }
             }
             catch (Exception ex)
             {
-                // Handle exceptions here
-                await Application.Current.MainPage.DisplayAlert("Error", "Something went wrong: " + ex.Message, "OK");
+                // Handle exceptions
+                await Application.Current.MainPage.DisplayAlert("Error", "An error occurred while monitoring the request status: ", "OK");
             }
         }
 
-        private async Task PeriodicallyCheckRequestTable(string key)
+        private async Task DeletePendingRecord(string mobileNumber)
         {
             try
             {
-                while (!_stopChecking) // Continuously check until stopped
+                // Retrieve all records in the "ClickedMobileNumbers" table
+                var records = await _firebaseClient
+                    .Child("ClickedMobileNumbers")
+                    .OnceAsync<dynamic>();
+
+                // Find the record with the mobile number and status "Pending"
+                foreach (var record in records)
                 {
-                    // Check every 30 seconds
-                    await Task.Delay(TimeSpan.FromSeconds(5));
-
-                    // Query the "requests" table to see if the user exists
-                    var request = await _firebaseClient
-                        .Child("requests")
-                        .Child(key)
-                        .OnceSingleAsync<dynamic>();
-
-                    if (request != null)
+                    if (record.Object.MobileNumber == mobileNumber && record.Object.Status == "Pending")
                     {
-                        // User exists in the "requests" table
-                        await Application.Current.MainPage.DisplayAlert("Success", "Your request has been accepted.", "OK");
-                        _stopChecking = true; // Stop further checks
+                        // Delete the pending record
+                        await _firebaseClient
+                            .Child("ClickedMobileNumbers")
+                            .Child(record.Key)
+                            .DeleteAsync();
 
-                        // Navigate to the appropriate page if needed
-                        await App.Current.MainPage.Navigation.PushAsync(new RequestDetailsPage());
+                        await Application.Current.MainPage.DisplayAlert("Info", "Service Provider did not respond in time. Your request has been canceled.", "OK");
+                        await App.Current.MainPage.Navigation.PushAsync(new LoadingPage());
+                        break;
                     }
                 }
             }
             catch (Exception ex)
             {
                 // Handle exceptions
-                await Application.Current.MainPage.DisplayAlert("Error", "An error occurred while checking the request table: " + ex.Message, "OK");
+                await Application.Current.MainPage.DisplayAlert("Error", "Something went wrong while deleting the pending record: ", "OK");
             }
         }
 

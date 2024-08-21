@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Roadside.Views.ProfilePage"
              xmlns:local="clr-namespace:Roadside.ViewModels"
-             Shell.FlyoutBehavior="Disabled"             
+             Shell.FlyoutBehavior="Disabled"          
+             Shell.NavBarIsVisible="False"
              xmlns:sf="clr-namespace:Syncfusion.Maui.Core;assembly=Syncfusion.Maui.Core"
              xmlns:sfs="clr-namespace:Syncfusion.Maui.Shimmer;assembly=Syncfusion.Maui.Core"
              Title="ProfilePage">
@@ -14,6 +15,12 @@
     </ContentPage.BindingContext>
 
     <VerticalStackLayout Spacing="20" Padding="20">
+        <Label
+            Text="Profile Page"
+            VerticalOptions="Center"
+            HorizontalOptions="Center"
+            FontAttributes="Bold"
+            FontSize="Large"/>
         <sf:SfTextInputLayout Hint="First Name:"
                           ContainerType="Outlined"
                           OutlineCornerRadius="9"
