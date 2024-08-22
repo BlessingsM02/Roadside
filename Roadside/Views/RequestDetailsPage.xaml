@@ -6,11 +6,12 @@
              Shell.FlyoutBehavior="Disabled">
 
     <ContentPage.Content>
-        <StackLayout>
-            <maps:Map x:Name="ServiceMap"
-                      MapType="Street"
-                      IsShowingUser="True"
-                      VerticalOptions="FillAndExpand" />
-        </StackLayout>
+        <Grid>
+            <maps:Map x:Name="userMap"
+                  IsShowingUser="True"
+                  MapType="Street"
+                  VerticalOptions="FillAndExpand"
+                  HorizontalOptions="FillAndExpand" />
+        </Grid>
     </ContentPage.Content>
 </ContentPage>
