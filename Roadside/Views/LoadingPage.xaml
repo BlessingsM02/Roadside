@@ -18,7 +18,7 @@
                     <StackLayout Padding="20"
                                  Spacing="20">
                         <Button
-                                Text="{Binding MobileNumber}"
+                                Text="{Binding FullName}"
                                 Command="{Binding Source={RelativeSource AncestorType={x:Type vm:LoadingViewModel}}, Path=ButtonClickedCommand}"
                                 CommandParameter="{Binding .}" />
 

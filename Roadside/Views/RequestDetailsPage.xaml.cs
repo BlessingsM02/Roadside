@@ -1,77 +1,73 @@
 using Firebase.Database;
-using Roadside.Models;
 using Microsoft.Maui.Maps;
 using Microsoft.Maui.Controls.Maps;
-
+using Microsoft.Maui.Devices.Sensors;
 
 namespace Roadside.Views
 {
     public partial class RequestDetailsPage : ContentPage
     {
-
         private readonly FirebaseClient _firebaseClient;
 
         public RequestDetailsPage()
         {
             InitializeComponent();
-            _firebaseClient = new FirebaseClient("https://roadside1-1ffd7-default-rtdb.firebaseio.com/");
-
+            _firebaseClient = new FirebaseClient("https://roadside-service-f65db-default-rtdb.firebaseio.com/");
         }
-
 
         protected override async void OnAppearing()
         {
             base.OnAppearing();
 
-
-            var geolocationRequest = new GeolocationRequest(GeolocationAccuracy.High, TimeSpan.FromMicroseconds(20));
+            // Fetch the user's current location
+            var geolocationRequest = new GeolocationRequest(GeolocationAccuracy.High, TimeSpan.FromSeconds(10));
             var location = await Geolocation.GetLocationAsync(geolocationRequest);
 
-            userMap.MoveToRegion(MapSpan.FromCenterAndRadius(location, Distance.FromMeters(200)));
-
-            var mobileNumber = Preferences.Get("mobile_number", string.Empty);
-            var servicelocation = await _firebaseClient
-                .Child("request")
-                .OnceAsync<RequestData>();
-
-            var currentServiceLocation = servicelocation.FirstOrDefault(u => u.Object.DriverId == mobileNumber);
-
-            if (currentServiceLocation != null)
+            if (location != null)
             {
-                await Application.Current.MainPage.DisplayAlert("Info", $"{currentServiceLocation.Object.ServiceProviderLatitude}, {currentServiceLocation.Object.ServiceProviderLongitude}", "OK");
+                // Center the map on the user's location
+                userMap.MoveToRegion(MapSpan.FromCenterAndRadius(location, Distance.FromMeters(200)));
 
-                // Convert latitude and longitude from string to double
-                if (double.TryParse(currentServiceLocation.Object.ServiceProviderLatitude, out double latitude) &&
-                    double.TryParse(currentServiceLocation.Object.ServiceProviderLongitude, out double longitude))
+                // Add a pin for the user's current location
+                var userPin = new Pin
                 {
-                    var loc = new Microsoft.Maui.Devices.Sensors.Location(latitude, longitude);
-
-                    var pin = new Pin
-                    {
-                        Address = $"{longitude}, {latitude}",
-                        Location = loc,
-                        Type = PinType.Place,
-                        Label = "Current Location",
-                    };
-
-                    // Assuming 'map' is your map control
-                    userMap.Pins.Add(pin);
-                }
-                else
-                {
-                    await Application.Current.MainPage.DisplayAlert("Info", "There was a problem fetching service provider location", "OK");
-                    // Handle cases where latitude or longitude could not be parsed
-                    // For example, you could log an error or display a message
-                }
-
-
-
+                    Label = "Your Location",
+                    Location = new Location(location.Latitude, location.Longitude),
+                    Type = PinType.Place
+                };
+                userMap.Pins.Add(userPin);
+            }
+            else
+            {
+                await DisplayAlert("Error", "Unable to get current location.", "OK");
+                return;
             }
 
+            // Retrieve the service provider's coordinates from the "requests" table in Firebase
+            var serviceLocation = await _firebaseClient
+                .Child("requests")
+                .OnceAsync<dynamic>(); // Using dynamic instead of a specific type
 
+            var mobileNumber = Preferences.Get("mobile_number", string.Empty);
+            var currentServiceLocation = serviceLocation.FirstOrDefault(u => u.Object.DriverId == mobileNumber);
 
+/*            if (currentServiceLocation != null)
+            {
+                var latitude = currentServiceLocation.Object.Latitude;
+                var longitude = currentServiceLocation.Object.Longitude;
 
-
+                var servicePin = new Pin
+                {
+                    Label = "Service Provider Location",
+                    Location = new Location(latitude, longitude),
+                    Type = PinType.Place
+                };
+                userMap.Pins.Add(servicePin);
+            }
+            else
+            {
+                await DisplayAlert("Error", "No matching request found.", "OK");
+            }*/
         }
     }
 }

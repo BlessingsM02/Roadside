@@ -93,7 +93,8 @@ namespace Roadside.ViewModels
                         Longitude = record.Object.Longitude,
                         FirstName = user?.FirstName,
                         LastName = user?.LastName,
-                        MobileNumber = user?.MobileNumber
+                        MobileNumber = user?.MobileNumber,
+                        FullName = $"{user.FirstName} {user.LastName}"
                     });
                 }
                 AllWorking = allWorkingWithUser;
@@ -129,12 +130,16 @@ namespace Roadside.ViewModels
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string MobileNumber { get; set; }
+        public string FullName { get; set; }
+
     }
     public class User
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string MobileNumber { get; set; }
+        public string FullName { get; set; }
+
     }
     public class Working
     {
