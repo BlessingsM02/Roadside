@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Roadside.Views.HomePage"
@@ -8,16 +7,23 @@
              Shell.FlyoutBehavior="Disabled"
              Shell.NavBarIsVisible="False">
 
-
-
-    <Grid Margin="10">
+    <Grid ColumnSpacing="40">
         <maps:Map x:Name="mat"
                   IsShowingUser="True"
-                  VerticalOptions="Start"
-                  />
+                  VerticalOptions="FillAndExpand"
+                  HorizontalOptions="FillAndExpand"
+                  Margin="0,0,0,80"/>
+
         <Button 
             Text="Request"
+            TextColor="White"
+            FontAttributes="Bold"
             VerticalOptions="End"
+            HorizontalOptions="FillAndExpand"
+            HeightRequest="60"
+            Margin="3"
+            CornerRadius="30"
             Clicked="requestButton_Clicked"/>
+
     </Grid>
 </ContentPage>

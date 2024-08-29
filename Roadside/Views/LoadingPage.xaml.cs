@@ -10,5 +10,8 @@ public partial class LoadingPage : ContentPage
 		BindingContext = new LoadingViewModel();
     }
 
-   
+    private async void Button_Clicked(object sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
+    }
 }

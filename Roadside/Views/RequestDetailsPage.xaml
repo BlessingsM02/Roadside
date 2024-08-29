@@ -3,15 +3,29 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
              x:Class="Roadside.Views.RequestDetailsPage"
+             Shell.NavBarIsVisible="False"
              Shell.FlyoutBehavior="Disabled">
 
     <ContentPage.Content>
-        <Grid>
+
+        <Grid ColumnSpacing="40">
             <maps:Map x:Name="userMap"
                   IsShowingUser="True"
                   MapType="Street"
                   VerticalOptions="FillAndExpand"
-                  HorizontalOptions="FillAndExpand" />
+                  HorizontalOptions="FillAndExpand"
+                  Margin="0,0,0,80"/>
+
+            <Button 
+                    Text="Cancel"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    VerticalOptions="End"
+                    HorizontalOptions="FillAndExpand"
+                    HeightRequest="60"
+                    Margin="3"
+                    CornerRadius="30"/>
+
         </Grid>
     </ContentPage.Content>
 </ContentPage>
