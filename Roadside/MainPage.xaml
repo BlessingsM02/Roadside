@@ -17,9 +17,9 @@
                    HorizontalOptions="Center"
                    HeightRequest="150"
                    WidthRequest="150"
-                   Margin="0,0,0,20"/>
+                   Margin="0,0,0,20"/> 
 
-            <!-- Combined Mobile Number and OTP Input Section -->
+            <!-- Mobile Number and OTP Input Section -->
             <Frame BackgroundColor="#F0F0F0"
                    CornerRadius="10"
                    Padding="20"
