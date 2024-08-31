@@ -62,6 +62,7 @@
 	  <None Remove="Resources\Images\home.svg" />
 	  <None Remove="Resources\Images\profile.svg" />
 	  <None Remove="Resources\Images\profile2.svg" />
+	  <None Remove="Resources\Images\project_logo.svg" />
 	</ItemGroup>
 
 	<ItemGroup>

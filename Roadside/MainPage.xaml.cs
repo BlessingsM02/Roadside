@@ -6,65 +6,95 @@ namespace Roadside
     public partial class MainPage : ContentPage
     {
         private readonly IAuthenticationService _authenticationService;
+        private bool _isOTPPhase = false; // To track whether we are in the OTP phase
 
         public MainPage(IAuthenticationService authenticationService)
         {
             InitializeComponent();
+            _authenticationService = authenticationService;
 
-            //check if user is already logged in
+            CheckIfUserIsLoggedIn();
+        }
+
+        private void CheckIfUserIsLoggedIn()
+        {
             var savedMobileNumber = Preferences.Get("mobile_number", string.Empty);
             if (!string.IsNullOrEmpty(savedMobileNumber))
             {
-                // Directly navigate to NewPage1
                 Shell.Current.GoToAsync($"//{nameof(HomePage)}");
             }
-
-            _authenticationService = authenticationService;
         }
-       
 
         private async void Submit_Clicked(object sender, EventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace(MobileEntry.Text))
+            if (_isOTPPhase)
             {
-                var isValidMobile = await _authenticationService.AuthenticateMobile(MobileEntry.Text);
+                await VerifyOTP();
+            }
+            else
+            {
+                await SubmitMobileNumber();
+            }
+        }
+
+        private async Task SubmitMobileNumber()
+        {
+            if (IsValidMobileNumber())
+            {
+                var isValidMobile = await _authenticationService.AuthenticateMobile("+26"+MobileEntry.Text);
                 if (isValidMobile)
                 {
-                    // Show verification UI and disable input controls
-                    verificationInfo.IsVisible = true;
-                    MobileEntry.IsEnabled = false;
-                    btnS.IsEnabled = false;
+                    TransitionToOTPPhase();
                 }
                 else
                 {
                     await DisplayAlert("Error", "Enter a valid mobile number", "OK");
                 }
             }
-            else
-            {
-                await DisplayAlert("Error", "Please enter a Mobile Number", "OK");
-            }
         }
 
-        private async void btnVerify_Clicked(object sender, EventArgs e)
+        private async Task VerifyOTP()
         {
-            if (!string.IsNullOrWhiteSpace(codeEntry.Text))
+            if (IsValidOTP())
             {
                 var isValidCode = await _authenticationService.ValidateOTP(codeEntry.Text);
                 if (isValidCode)
                 {
-                    // Navigate to the next page upon successful validation
-                    await Navigation.PushAsync(new Views.NewPage1());
+                    await Navigation.PushAsync(new NewPage1());
                 }
                 else
                 {
                     await DisplayAlert("Error", "Invalid Verification Code", "OK");
                 }
             }
-            else
+        }
+
+        private void TransitionToOTPPhase()
+        {
+            _isOTPPhase = true;
+            MobileEntry.IsEnabled = false; // Disable mobile number input
+            codeEntry.IsEnabled = true;    // Enable OTP input
+            btnSubmit.Text = "Verify";     // Change button text to "Verify"
+        }
+
+        private bool IsValidMobileNumber()
+        {
+            if (string.IsNullOrWhiteSpace(MobileEntry.Text))
             {
-                await DisplayAlert("Error", "Please enter a Verification Code", "OK");
+                DisplayAlert("Error", "Please enter a Mobile Number", "OK");
+                return false;
             }
+            return true;
+        }
+
+        private bool IsValidOTP()
+        {
+            if (string.IsNullOrWhiteSpace(codeEntry.Text))
+            {
+                DisplayAlert("Error", "Please enter a Verification Code", "OK");
+                return false;
+            }
+            return true;
         }
     }
 }
