@@ -19,7 +19,7 @@ namespace Roadside.Services
 
             var authOption = PhoneAuthOptions.NewBuilder()
                 .SetPhoneNumber(mobile)
-                .SetTimeout((Java.Lang.Long)60L, Java.Util.Concurrent.TimeUnit.Seconds)
+                .SetTimeout((Java.Lang.Long)90L, Java.Util.Concurrent.TimeUnit.Seconds)
                 .SetActivity(currentActivity)
                 .SetCallbacks(this)
                 .Build();

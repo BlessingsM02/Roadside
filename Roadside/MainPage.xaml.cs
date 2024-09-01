@@ -39,19 +39,32 @@ namespace Roadside
 
         private async Task SubmitMobileNumber()
         {
-            if (IsValidMobileNumber())
+            try
             {
-                var isValidMobile = await _authenticationService.AuthenticateMobile("+26"+MobileEntry.Text);
-                if (isValidMobile)
+                if (IsValidMobileNumber())
                 {
-                    TransitionToOTPPhase();
-                }
-                else
-                {
-                    await DisplayAlert("Error", "Enter a valid mobile number", "OK");
+                    IsBusy = true; // Show loading indicator
+                    var isValidMobile = await _authenticationService.AuthenticateMobile("+26" + MobileEntry.Text);
+                    if (isValidMobile)
+                    {
+                        TransitionToOTPPhase();
+                    }
+                    else
+                    {
+                        await DisplayAlert("Error", "Failed to send OTP. Please try again.", "OK");
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");
+            }
+            finally
+            {
+                IsBusy = false; // Hide loading indicator
+            }
         }
+
 
         private async Task VerifyOTP()
         {
