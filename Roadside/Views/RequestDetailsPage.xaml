@@ -15,17 +15,18 @@
                   VerticalOptions="FillAndExpand"
                   HorizontalOptions="FillAndExpand"
                   Margin="0,0,0,80"/>
+            
 
             <Button 
-                    Text="Cancel"
+                    Text="Request Details"
                     TextColor="White"
                     FontAttributes="Bold"
                     VerticalOptions="End"
                     HorizontalOptions="FillAndExpand"
                     HeightRequest="60"
                     Margin="3"
+                    Clicked="Button_Clicked"
                     CornerRadius="30"/>
-
         </Grid>
     </ContentPage.Content>
 </ContentPage>

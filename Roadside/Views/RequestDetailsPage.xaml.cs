@@ -2,6 +2,7 @@ using Firebase.Database;
 using Microsoft.Maui.Maps;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Devices.Sensors;
+using Mopups.Services;
 
 namespace Roadside.Views
 {
@@ -68,6 +69,13 @@ namespace Roadside.Views
             {
                 await DisplayAlert("Error", "No matching request found.", "OK");
             }*/
+        }
+
+        private async void Button_Clicked(object sender, EventArgs e)
+        {
+            var bottomSheet = new RequestDetailsBottomSheet();
+
+            await MopupService.Instance.PushAsync(bottomSheet);
         }
     }
 }

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<mopups:PopupPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Roadside.Views.RequestPage"
              Title="Confirm Request Details"
+             xmlns:mopups="clr-namespace:Mopups.Pages;assembly=Mopups"
              xmlns:sf="clr-namespace:Syncfusion.Maui.Core;assembly=Syncfusion.Maui.Core"
              Shell.FlyoutBehavior="Disabled"
              xmlns:local="clr-namespace:Roadside.ViewModels"
@@ -12,8 +13,18 @@
         <local:RequestViewModel />
     </ContentPage.BindingContext>
     
-    <VerticalStackLayout Padding="20"
-                         Spacing="15">
+
+    <StackLayout BackgroundColor="White"
+                 Padding="20"
+                 VerticalOptions="End"
+                 HeightRequest="300">
+
+        <Label Text="Vehicle Details"
+               FontAttributes="Bold"
+               FontSize="20"
+               TextColor="Black"
+               HorizontalOptions="Center"/>
+
 
         <sf:SfTextInputLayout Hint="Vehicle Description:"
                   ContainerType="Outlined"
@@ -26,7 +37,7 @@
                    FontAttributes="Bold"
                    IsReadOnly="True"/>
         </sf:SfTextInputLayout>
-        
+
         <sf:SfTextInputLayout Hint="Plate Number:"
                   ContainerType="Outlined"
                   OutlineCornerRadius="9"
@@ -39,10 +50,14 @@
                    IsReadOnly="True"/>
         </sf:SfTextInputLayout>
 
-        <Button
-            Text="Confirm"
-            Command="{Binding SubmitRequestCommand}"/>
 
 
-    </VerticalStackLayout>
-</ContentPage>
+        <Button Text="Confirm"
+                Command="{Binding SubmitRequestCommand}"
+                TextColor="White"
+                CornerRadius="20"
+                HeightRequest="50"
+                VerticalOptions="EndAndExpand"/>
+
+    </StackLayout>
+</mopups:PopupPage>

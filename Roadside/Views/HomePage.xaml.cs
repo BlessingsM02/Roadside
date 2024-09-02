@@ -1,4 +1,6 @@
 using Microsoft.Maui.Maps;
+using Mopups.Services;
+using The49.Maui.BottomSheet;
 namespace Roadside.Views;
 
 public partial class HomePage : ContentPage
@@ -16,35 +18,19 @@ public partial class HomePage : ContentPage
         var location = await Geolocation.GetLocationAsync(geolocationRequest);
 
         mat.MoveToRegion(MapSpan.FromCenterAndRadius(location, Distance.FromMeters(200)));
-       
-
+      
     }
+
     private async void requestButton_Clicked(object sender, EventArgs e)
     {
-
-
-
         try
         {
             var geolocationRequest = new GeolocationRequest(GeolocationAccuracy.High, TimeSpan.FromSeconds(20));
             var location = await Geolocation.GetLocationAsync(geolocationRequest);
 
-            // Clear existing pins on the map
-            /*mat.Pins.Clear();
-
-             // Add a new pin for the current location
-             var pin = new Pin
-             {
-                 Address = $"{location}",
-                 Location = location,
-                 Type = PinType.Place,
-                 Label = "Current",
-             };
-             mat.Pins.Add(pin);*/
-
-            await Navigation.PushAsync(new RequestPage());
-
-
+            var requestBottomSheet = new RequestPage();
+            await MopupService.Instance.PushAsync(requestBottomSheet);
+            //await Navigation.PushAsync(new RequestPage());
         }
         catch (Exception ex)
         {

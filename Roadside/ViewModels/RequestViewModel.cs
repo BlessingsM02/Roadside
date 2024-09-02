@@ -1,5 +1,6 @@
 ﻿using Firebase.Database;
 using Firebase.Database.Query;
+using Mopups.Services;
 using Roadside.Models;
 using Roadside.Views;
 
@@ -225,8 +226,7 @@ namespace Roadside.ViewModels
                 return;
             }
 
-            //Redirect to LoadingPage
-            //await Application.Current.MainPage.DisplayAlert("Success", "Request submitted successfully.", "OK");
+            await MopupService.Instance.PopAsync();
             await Shell.Current.GoToAsync($"//{nameof(LoadingPage)}");
 
         }

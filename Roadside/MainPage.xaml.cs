@@ -1,27 +1,50 @@
-﻿using Roadside.Services;
+﻿using Firebase.Database;
+using Roadside.Services;
 using Roadside.Views;
+using Roadside.Models;
 
 namespace Roadside
 {
     public partial class MainPage : ContentPage
     {
         private readonly IAuthenticationService _authenticationService;
-        private bool _isOTPPhase = false; // To track whether we are in the OTP phase
+        private bool _isOTPPhase = false;
+        private readonly FirebaseClient _firebaseClient;
 
         public MainPage(IAuthenticationService authenticationService)
         {
             InitializeComponent();
+            _firebaseClient = new FirebaseClient("https://roadside-service-f65db-default-rtdb.firebaseio.com/");
             _authenticationService = authenticationService;
-
+            CheckIfUserHasRequest();
             CheckIfUserIsLoggedIn();
         }
 
+        //check if user is already logged in
         private void CheckIfUserIsLoggedIn()
         {
             var savedMobileNumber = Preferences.Get("mobile_number", string.Empty);
             if (!string.IsNullOrEmpty(savedMobileNumber))
             {
                 Shell.Current.GoToAsync($"//{nameof(HomePage)}");
+            }
+        }
+
+        //check if user has an active request
+        private async Task  CheckIfUserHasRequest()
+        {
+            var savedMobileNumber = Preferences.Get("mobile_number", string.Empty);
+            var requests = await  _firebaseClient
+                        .Child("requests")
+                        .OnceAsync<dynamic>();
+
+            foreach (var request in requests)
+            {
+                
+                if (request.Object.DriverId == savedMobileNumber)
+                {
+                    await Shell.Current.GoToAsync($"//{nameof(RequestDetailsPage)}");
+                }
             }
         }
 

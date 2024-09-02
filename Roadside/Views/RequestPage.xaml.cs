@@ -2,7 +2,7 @@ using Roadside.ViewModels;
 
 namespace Roadside.Views;
 
-public partial class RequestPage : ContentPage
+public partial class RequestPage
 {
 	public RequestPage()
 	{
