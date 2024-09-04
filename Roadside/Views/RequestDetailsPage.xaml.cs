@@ -3,6 +3,7 @@ using Microsoft.Maui.Maps;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Devices.Sensors;
 using Mopups.Services;
+using Roadside.Models;
 
 namespace Roadside.Views
 {
@@ -47,28 +48,35 @@ namespace Roadside.Views
             // Retrieve the service provider's coordinates from the "requests" table in Firebase
             var serviceLocation = await _firebaseClient
                 .Child("requests")
-                .OnceAsync<dynamic>(); // Using dynamic instead of a specific type
-
-            var mobileNumber = Preferences.Get("mobile_number", string.Empty);
-            var currentServiceLocation = serviceLocation.FirstOrDefault(u => u.Object.DriverId == mobileNumber);
-
-/*            if (currentServiceLocation != null)
+                .OnceAsync<RequestData>(); // Using dynamic instead of a specific type
+            try
             {
-                var latitude = currentServiceLocation.Object.Latitude;
-                var longitude = currentServiceLocation.Object.Longitude;
+                var mobileNumber = Preferences.Get("mobile_number", string.Empty);
+                var currentServiceLocation = serviceLocation.FirstOrDefault(u => u.Object.DriverId == mobileNumber);
 
-                var servicePin = new Pin
+                if (currentServiceLocation != null)
                 {
-                    Label = "Service Provider Location",
-                    Location = new Location(latitude, longitude),
-                    Type = PinType.Place
-                };
-                userMap.Pins.Add(servicePin);
+                    var latitude = currentServiceLocation.Object.ServiceProviderLatitude;
+                    var longitude = currentServiceLocation.Object.ServiceProviderLongitude;
+
+                    var servicePin = new Pin
+                    {
+                        Label = "Service Provider Location",
+                        Location = new Location(latitude, longitude),
+                        Type = PinType.Place
+                    };
+                    userMap.Pins.Add(servicePin);
+                }
+                else
+                {
+                    await DisplayAlert("Error", "No matching request found.", "OK");
+                }
             }
-            else
+            catch (Exception ex) 
             {
-                await DisplayAlert("Error", "No matching request found.", "OK");
-            }*/
+                await DisplayAlert("Error", "wrong shit", "OK");
+
+            }
         }
 
         private async void Button_Clicked(object sender, EventArgs e)

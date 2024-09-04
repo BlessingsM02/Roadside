@@ -11,5 +11,6 @@ namespace Roadside.Models
         public DateTime Date { get; set; }
         public string Status { get; set; }
         public string ServiceProviderId { get; set; }
+        public double Price { get; set; }
     }
 }

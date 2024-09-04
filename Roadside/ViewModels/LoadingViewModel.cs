@@ -39,7 +39,9 @@ namespace Roadside.ViewModels
                         Longitude = location.Longitude,
                         Status = "Pending",
                         Date = DateTime.UtcNow.ToString("o"),
-                        DriverId = mobileNumber
+                        DriverId = mobileNumber,
+                        Price = 100,
+                        RatingId = 0
                     };
 
                     // Send the object to Firebase and get the key
