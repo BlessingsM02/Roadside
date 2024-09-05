@@ -219,11 +219,11 @@ namespace Roadside.ViewModels
         {
             try
             {
-                var userDetails = await _firebaseClient2
+                var userDetails = await _firebaseClient
                     .Child("users")
                     .OnceAsync<dynamic>();
 
-                var user = userDetails.FirstOrDefault(u => u.Key == driverId);
+                var user = userDetails.FirstOrDefault(u => u.Key == ServiceProviderId);
 
                 if (user != null)
                 {
@@ -245,11 +245,11 @@ namespace Roadside.ViewModels
         {
             try
             {
-                var vehicleDetails = await _firebaseClient2
+                var vehicleDetails = await _firebaseClient
                     .Child("vehicles")
                     .OnceAsync<dynamic>();
 
-                var vehicle = vehicleDetails.FirstOrDefault(v => v.Object.UserId == driverId);
+                var vehicle = vehicleDetails.FirstOrDefault(v => v.Object.UserId == ServiceProviderId);
 
                 if (vehicle != null)
                 {

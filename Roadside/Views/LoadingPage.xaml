@@ -42,6 +42,11 @@
                                    VerticalOptions="Center"
                                    TextColor="#34495e"
                                    FontAttributes="Bold" />
+                            <Label Text="k100"
+                                    FontSize="Medium"
+                                    VerticalOptions="Center"
+                                   TextColor="#34495e"
+                                   FontAttributes="Bold" />
 
                             <!-- Action Button -->
                             <Button Text="Request"
