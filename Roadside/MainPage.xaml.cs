@@ -41,7 +41,7 @@ namespace Roadside
             foreach (var request in requests)
             {
                 
-                if (request.Object.DriverId == savedMobileNumber)
+                if (request.Object.DriverId == savedMobileNumber && request.Object.Status == "Accepted")
                 {
                     await Shell.Current.GoToAsync($"//{nameof(RequestDetailsPage)}");
                 }

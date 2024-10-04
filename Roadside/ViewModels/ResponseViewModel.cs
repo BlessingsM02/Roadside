@@ -27,7 +27,7 @@ namespace Roadside.ViewModels
 
                 while (!_stopChecking && elapsedTime < maxWaitTime)
                 {
-                    // Query all records in the "requests" table
+                    
                     var requests = await _firebaseClient
                         .Child("requests")
                         .OnceAsync<dynamic>();
@@ -37,16 +37,15 @@ namespace Roadside.ViewModels
                         // Check if the user has made a request and the driver ID matches the mobile number in preferences
                         if (request.Object.DriverId == mobileNumber)
                         {
-                            // The driver has accepted the request
-                            
+                                                     
                             await Application.Current.MainPage.DisplayAlert("Success", "Your request has been accepted.", "OK");
                             _stopChecking = true; // Stop further checks
 
-                            // Navigate to the appropriate page if needed
-                            //await Navigation.PushAsync(new Views.NewPage1());
+                            
+                            //await Navigation.PushAsync(new Views.RequestDetailsPage());
                             await Shell.Current.GoToAsync($"//{nameof(RequestDetailsPage)}");
                             //await App.Current.MainPage.Navigation.PushAsync(new RequestDetailsPage());
-                            return; // Exit the method as the request is accepted
+                            return; 
                         }
                     }
 

@@ -6,6 +6,7 @@
     xmlns:locals="clr-namespace:Roadside.Views"
     xmlns:details="clr-namespace:Roadside.Views"
     xmlns:loading="clr-namespace:Roadside.Views"
+    xmlns:payment="clr-namespace:Roadside.Views"
     xmlns:local="clr-namespace:Roadside"
     Shell.FlyoutBehavior="Flyout"
     Title="Roadside">
@@ -25,6 +26,10 @@
         ContentTemplate="{DataTemplate loading:LoadingPage}"
         Route="LoadingPage"/>
 
+    <ShellContent
+        Title="PaymentPage"
+        ContentTemplate="{DataTemplate payment:LoadingPage}"
+        Route="PaymentPage"/>
 
     <TabBar FlyoutDisplayOptions="AsMultipleItems">
         <ShellContent
