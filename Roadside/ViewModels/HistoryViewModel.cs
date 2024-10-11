@@ -61,8 +61,12 @@ namespace Roadside.ViewModels
                 // Add all requests to the collection
                 foreach (var request in allRequests)
                 {
-                    AllRequests.Add(request.Object);
-                    TotalAmount += request.Object.Amount; // Add to total amount
+                    if(request.Object.DriverId == mobileNumber)
+                    {
+                        AllRequests.Add(request.Object);
+                        TotalAmount += request.Object.Amount;
+                    }
+                     
                 }
 
                 // Show completed requests by default

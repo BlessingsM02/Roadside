@@ -5,7 +5,10 @@
              Shell.TabBarIsVisible="False"
              Shell.NavBarIsVisible="False"
              Title="Service Providers"
+             Shell.BackButtonBehavior="{Binding BackCommand}"
              BackgroundColor="#f0f4f7">
+    
+ 
 
     <ContentPage.BindingContext>
         <vm:LoadingViewModel />
@@ -42,7 +45,7 @@
                                    VerticalOptions="Center"
                                    TextColor="#34495e"
                                    FontAttributes="Bold" />
-                            <Label Text="k100"
+                            <Label Text="{Binding Price, StringFormat='K{0:F0}'}"
                                     FontSize="Medium"
                                     VerticalOptions="Center"
                                    TextColor="#34495e"

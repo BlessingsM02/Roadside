@@ -9,7 +9,10 @@
 
     <core:SfBusyIndicator IsRunning="True"
                           Title="Waiting for a respose">
-        
+        <Label Text="Do not press anything"
+               VerticalOptions="Center"
+               HorizontalOptions="Center"/>
     </core:SfBusyIndicator>
+    
    
 </ContentPage>

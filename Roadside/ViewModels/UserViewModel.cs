@@ -4,13 +4,12 @@ using Firebase.Database.Query;
 using Roadside.Models;
 using Roadside.Views;
 
-
 namespace Roadside.ViewModels
 {
     internal class UserViewModel : BindableObject
     {
-        private string _firstName;
-        private string _lastName;
+        private string _fullName;
+        private string _contact;
         private string _vehicleDescription;
         private string _plateNumber;
         private FirebaseClient _firebaseClient;
@@ -22,22 +21,22 @@ namespace Roadside.ViewModels
             CheckUserExistsAsync();
         }
 
-        public string FirstName
+        public string FullName
         {
-            get => _firstName;
+            get => _fullName;
             set
             {
-                _firstName = value;
+                _fullName = value;
                 OnPropertyChanged();
             }
         }
 
-        public string LastName
+        public string Contact
         {
-            get => _lastName;
+            get => _contact;
             set
             {
-                _lastName = value;
+                _contact = value;
                 OnPropertyChanged();
             }
         }
@@ -78,19 +77,19 @@ namespace Roadside.ViewModels
 
                 if (user != null)
                 {
-                    await Application.Current.MainPage.DisplayAlert("Info", "A user with this mobile number already exists.", "OK");
+                    await Application.Current.MainPage.DisplayAlert("Info", "A user with this contact already exists.", "OK");
                     await Shell.Current.GoToAsync($"//{nameof(ProfilePage)}");
                 }
             }
             else
             {
-                await Application.Current.MainPage.DisplayAlert("Error", "Mobile number not found in preferences.", "OK");
+                await Application.Current.MainPage.DisplayAlert("Error", "Contact not found in preferences.", "OK");
             }
         }
 
         private async Task SubmitAsync()
         {
-            if (string.IsNullOrEmpty(FirstName) || string.IsNullOrEmpty(LastName) ||
+            if (string.IsNullOrEmpty(FullName) ||
                 string.IsNullOrEmpty(VehicleDescription) || string.IsNullOrEmpty(PlateNumber))
             {
                 await Application.Current.MainPage.DisplayAlert("Error", "All fields are required.", "OK");
@@ -103,17 +102,18 @@ namespace Roadside.ViewModels
 
                 if (!string.IsNullOrEmpty(mobileNumber))
                 {
-                    bool userExists = await SaveUser(mobileNumber);
-                    if (userExists)
+                    // Get the UserId after saving the user
+                    int userId = await SaveUser();
+                    if (userId > 0) // Ensure a valid UserId was returned
                     {
-                        await SaveVehicle(mobileNumber);
+                        await SaveVehicle(userId); // Pass the UserId to SaveVehicle
                         await Application.Current.MainPage.DisplayAlert("Success", "Information saved successfully.", "OK");
                         await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
                     }
                 }
                 else
                 {
-                    await Application.Current.MainPage.DisplayAlert("Error", "There was a problem with your mobile number", "OK");
+                    await Application.Current.MainPage.DisplayAlert("Error", "There was a problem with your contact number.", "OK");
                 }
             }
             catch (Exception ex)
@@ -122,40 +122,44 @@ namespace Roadside.ViewModels
             }
         }
 
-        private async Task<bool> SaveUser(string mobileNumber)
+        private async Task<int> SaveUser()
         {
             var users = await _firebaseClient
                 .Child("users")
                 .OnceAsync<Users>();
 
-            var user = users.FirstOrDefault(u => u.Object.MobileNumber == mobileNumber);
+            var user = users.FirstOrDefault(u => u.Object.MobileNumber == Contact);
 
             if (user != null)
             {
-                await Application.Current.MainPage.DisplayAlert("Alert", "A user with this mobile number already exists.", "OK");
+                await Application.Current.MainPage.DisplayAlert("Alert", "A user with this contact already exists.", "OK");
                 await Shell.Current.GoToAsync($"//{nameof(ProfilePage)}");
-                return false;
+                return -1; // Return -1 to indicate failure
             }
 
+            // Fetch the last UserId and increment it
+            int newUserId = await GetNextUserId();
+            var mobileNumber = Preferences.Get("mobile_number", string.Empty);
             var newUser = new Users
             {
-                FirstName = FirstName,
-                LastName = LastName,
-                MobileNumber = mobileNumber
+                UserId = newUserId,
+                FullName = FullName,
+                MobileNumber = mobileNumber, // Updated field for contact
+                //PlateNumber = PlateNumber // Include PlateNumber in user record
             };
 
             await _firebaseClient
                 .Child("users")
                 .PostAsync(newUser);
 
-            return true;
+            return newUserId; // Return the new UserId
         }
 
-        private async Task SaveVehicle(string mobileNumber)
+        private async Task SaveVehicle(int userId)
         {
             var vehicle = new Vehicle
             {
-                UserId = mobileNumber,
+                UserId = userId.ToString(), // Now using the UserId for reference
                 VehicleDescription = VehicleDescription,
                 PlateNumber = PlateNumber
             };
@@ -164,6 +168,23 @@ namespace Roadside.ViewModels
                 .Child("vehicles")
                 .PostAsync(vehicle);
         }
-    }
 
+        private async Task<int> GetNextUserId()
+        {
+            var users = await _firebaseClient
+                .Child("users")
+                .OrderBy("UserId")
+                .OnceAsync<Users>();
+
+            if (users.Any())
+            {
+                var lastUser = users.OrderByDescending(u => u.Object.UserId).FirstOrDefault();
+                return lastUser.Object.UserId + 1;
+            }
+
+            return 1; // If no users exist, start from 1
+        }
+
+
+    }
 }

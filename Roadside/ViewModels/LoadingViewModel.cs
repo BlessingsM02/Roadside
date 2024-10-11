@@ -1,9 +1,8 @@
 ﻿using Firebase.Database;
 using Firebase.Database.Query;
+using Roadside.Views;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Roadside.Views;
-
 
 namespace Roadside.ViewModels
 {
@@ -23,6 +22,7 @@ namespace Roadside.ViewModels
             ButtonClickedCommand = new Command<WorkingWithUser>(OnButtonClicked);
         }
 
+       
         private async void OnButtonClicked(WorkingWithUser selectedUser)
         {
             if (selectedUser != null)
@@ -32,6 +32,7 @@ namespace Roadside.ViewModels
                     var mobileNumber = Preferences.Get("mobile_number", string.Empty);
                     var request = new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10));
                     var location = await Geolocation.GetLocationAsync(request);
+
                     var requestData = new
                     {
                         ServiceProviderId = selectedUser.MobileNumber,
@@ -40,7 +41,7 @@ namespace Roadside.ViewModels
                         Status = "Pending",
                         Date = DateTime.UtcNow.ToString("o"),
                         DriverId = mobileNumber,
-                        Price = 100,
+                        Price = selectedUser.Price, // Use pre-calculated price
                         RatingId = 0
                     };
 
@@ -50,8 +51,6 @@ namespace Roadside.ViewModels
                         .PostAsync(requestData);
 
                     string key = result.Key; // The key of the newly created record
-
-                    //await Application.Current.MainPage.DisplayAlert("Success", "Waiting for Service provide to respond", "OK");
 
                     // Pass the key to the ResponsePage and navigate to response page
                     await App.Current.MainPage.Navigation.PushAsync(new ResponsePage(key));
@@ -64,9 +63,6 @@ namespace Roadside.ViewModels
             }
         }
 
-
-    
-
         public ObservableCollection<WorkingWithUser> AllWorking
         {
             get => _allWorking;
@@ -76,37 +72,73 @@ namespace Roadside.ViewModels
                 OnPropertyChanged();
             }
         }
+
         public Command LoadAllWorkingCommand { get; }
+
         private async Task LoadAllWorkingAsync()
         {
             try
             {
+                // Get the user's current location
+                var request = new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10));
+                var userLocation = await Geolocation.GetLocationAsync(request);
+
+                if (userLocation == null)
+                {
+                    await Application.Current.MainPage.DisplayAlert("Error", "Unable to retrieve your location.", "OK");
+                    return;
+                }
+
                 var workingRecords = await _firebaseClient
                     .Child("working")
                     .OnceAsync<Working>();
+
                 var allWorkingWithUser = new ObservableCollection<WorkingWithUser>();
+
                 foreach (var record in workingRecords)
                 {
-                    var user = await GetUserDetailsAsync(record.Object.Id);
-                    allWorkingWithUser.Add(new WorkingWithUser
+                    var serviceProviderLatitude = double.Parse(record.Object.Latitude);
+                    var serviceProviderLongitude = double.Parse(record.Object.Longitude);
+
+                    // Calculate distance using Haversine formula
+                    double distanceInKm = CalculateDistance(
+                        userLocation.Latitude,
+                        userLocation.Longitude,
+                        serviceProviderLatitude,
+                        serviceProviderLongitude
+                    );
+
+                    // Only add service providers within 16km
+                    if (distanceInKm <= 16)
                     {
-                        Id = record.Object.Id,
-                        Latitude = record.Object.Latitude,
-                        Longitude = record.Object.Longitude,
-                        FirstName = user?.FirstName,
-                        LastName = user?.LastName,
-                        MobileNumber = user?.MobileNumber,
-                        FullName = $"{user.FirstName} {user.LastName}"
-                    });
+                        var user = await GetUserDetailsAsync(record.Object.Id);
+                        if (user != null)
+                        {
+                            double price = CalculatePrice(distanceInKm);
+
+                            allWorkingWithUser.Add(new WorkingWithUser
+                            {
+                                Id = record.Object.Id,
+                                Latitude = record.Object.Latitude,
+                                Longitude = record.Object.Longitude,
+                                FirstName = user.FirstName,
+                                LastName = user.LastName,
+                                MobileNumber = user.MobileNumber,
+                                FullName = $"{user.FirstName} {user.LastName}",
+                                Price = price // Assign the calculated price
+                            });
+                        }
+                    }
                 }
+
                 AllWorking = allWorkingWithUser;
             }
             catch (Exception ex)
             {
-                // Handle exception
                 await Application.Current.MainPage.DisplayAlert("Error", $"Unable to load data: {ex.Message}", "OK");
             }
         }
+
         private async Task<User> GetUserDetailsAsync(string mobileNumber)
         {
             try
@@ -123,7 +155,40 @@ namespace Roadside.ViewModels
                 return null;
             }
         }
+
+        private double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+        {
+            const double R = 6371; // Radius of Earth in kilometers
+            var latRad1 = DegreesToRadians(lat1);
+            var latRad2 = DegreesToRadians(lat2);
+            var deltaLat = DegreesToRadians(lat2 - lat1);
+            var deltaLon = DegreesToRadians(lon2 - lon1);
+
+            var a = Math.Sin(deltaLat / 2) * Math.Sin(deltaLat / 2) +
+                    Math.Cos(latRad1) * Math.Cos(latRad2) *
+                    Math.Sin(deltaLon / 2) * Math.Sin(deltaLon / 2);
+            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+
+            return R * c; // Distance in kilometers
+        }
+
+        private double DegreesToRadians(double degrees)
+        {
+            return degrees * (Math.PI / 180);
+        }
+
+        private double CalculatePrice(double distanceInKm)
+        {
+            double baseFare = 25.00; //base fare
+            double ratePerKm = 12.00; //rate per kilometer
+
+            double price = baseFare + (ratePerKm * distanceInKm);
+
+            // Format to 2 decimal places and return
+            return Math.Round(price, 2);
+        }
     }
+
     public class WorkingWithUser
     {
         public string Id { get; set; }
@@ -133,16 +198,16 @@ namespace Roadside.ViewModels
         public string LastName { get; set; }
         public string MobileNumber { get; set; }
         public string FullName { get; set; }
-
+        public double Price { get; set; } // Add the Price property
     }
+
     public class User
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string MobileNumber { get; set; }
-        public string FullName { get; set; }
-
     }
+
     public class Working
     {
         public string Id { get; set; }
