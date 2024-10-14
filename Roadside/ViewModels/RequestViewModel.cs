@@ -10,8 +10,7 @@ namespace Roadside.ViewModels
 {
     internal class RequestViewModel : BindableObject
     {
-        private string _firstName;
-        private string _lastName;
+        private string _fullName;
         private string _vehicleDescription;
         private string _plateNumber;
         private string _serviceProviderId;
@@ -40,25 +39,17 @@ namespace Roadside.ViewModels
             }
         }
 
-        public string FirstName
+        public string FullName
         {
-            get => _firstName;
+            get => _fullName;
             set
             {
-                _firstName = value;
+                _fullName = value;
                 OnPropertyChanged();
             }
         }
 
-        public string LastName
-        {
-            get => _lastName;
-            set
-            {
-                _lastName = value;
-                OnPropertyChanged();
-            }
-        }
+       
 
         public string VehicleDescription
         {
@@ -131,7 +122,7 @@ namespace Roadside.ViewModels
 
                     if (user != null)
                     {
-                        FirstName = user.FullName;
+                        FullName = user.FullName;
                         MobileNumber = user.MobileNumber;
 
                         // Retrieve vehicle details using the user ID (mobile number)

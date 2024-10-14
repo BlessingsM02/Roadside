@@ -1,6 +1,7 @@
 ﻿using Firebase.Database;
 using Firebase.Database.Query;
 using Roadside.Views;
+using Roadside.Models;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
@@ -121,10 +122,8 @@ namespace Roadside.ViewModels
                                 Id = record.Object.Id,
                                 Latitude = record.Object.Latitude,
                                 Longitude = record.Object.Longitude,
-                                FirstName = user.FirstName,
-                                LastName = user.LastName,
+                                FullName = user.FullName,
                                 MobileNumber = user.MobileNumber,
-                                FullName = $"{user.FirstName} {user.LastName}",
                                 Price = price // Assign the calculated price
                             });
                         }
@@ -139,13 +138,13 @@ namespace Roadside.ViewModels
             }
         }
 
-        private async Task<User> GetUserDetailsAsync(string mobileNumber)
+        private async Task<Users> GetUserDetailsAsync(string mobileNumber)
         {
             try
             {
                 var users = await _firebaseClient
                     .Child("users")
-                    .OnceAsync<User>();
+                    .OnceAsync<Users>();
                 return users.FirstOrDefault(u => u.Object.MobileNumber == mobileNumber)?.Object;
             }
             catch (Exception ex)
@@ -194,19 +193,12 @@ namespace Roadside.ViewModels
         public string Id { get; set; }
         public string Latitude { get; set; }
         public string Longitude { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
         public string MobileNumber { get; set; }
         public string FullName { get; set; }
         public double Price { get; set; } // Add the Price property
     }
 
-    public class User
-    {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string MobileNumber { get; set; }
-    }
+
 
     public class Working
     {

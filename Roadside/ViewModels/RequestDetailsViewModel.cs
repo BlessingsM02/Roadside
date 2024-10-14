@@ -27,10 +27,12 @@ namespace Roadside.ViewModels
         private string _driverName;
         private string _vehicleDetails;
 
+
         public RequestDetailsViewModel()
         {
             OpenDialerCommand = new Command<string>(OpenDialer);
             _firebaseClient = new FirebaseClient("https://roadside-service-f65db-default-rtdb.firebaseio.com/");
+            _firebaseClient2 = new FirebaseClient("https://roadside1-1ffd7-default-rtdb.firebaseio.com/");
             LoadRequestDetailsCommand = new Command(async () => await LoadRequestDetailsAsync());
         }
 
@@ -182,9 +184,14 @@ namespace Roadside.ViewModels
                 var requestDetails = await _firebaseClient
                     .Child("requests")
                     .OnceAsync<RequestData>();
+                //retrieve user data
+                var specificUser = await _firebaseClient2
+                    .Child("users")
+                    .OnceAsync<Users>();
+
 
                 var requestData = requestDetails.FirstOrDefault(r => r.Object.DriverId == mobileNumber)?.Object;
-
+                var currentUser = specificUser.FirstOrDefault(c => c.Object.MobileNumber == requestData.ServiceProviderId)?.Object; //Specific user
                 if (requestData != null)
                 {
                     ServiceProviderId = requestData.ServiceProviderId;
@@ -221,14 +228,14 @@ namespace Roadside.ViewModels
             {
                 var userDetails = await _firebaseClient
                     .Child("users")
-                    .OnceAsync<dynamic>();
+                    .OnceAsync<Users>();
 
-                var user = userDetails.FirstOrDefault(u => u.Key == ServiceProviderId);
+                var user = userDetails.FirstOrDefault(u => u.Object.MobileNumber == ServiceProviderId);
 
                 if (user != null)
                 {
-                    var DriverDetails = $"{user.Object.FirstName} {user.Object.LastName}";
-                    DriverName = DriverDetails;
+                    var driverDetails = $"{user.Object.FullName}";
+                    DriverName = driverDetails; 
                 }
                 else
                 {
@@ -241,29 +248,45 @@ namespace Roadside.ViewModels
             }
         }
 
-        private async Task LoadVehicleDetailsAsync(string driverId)
+        private async Task LoadVehicleDetailsAsync(string serviceProviderId)
         {
             try
             {
-                var vehicleDetails = await _firebaseClient
-                    .Child("vehicles")
-                    .OnceAsync<dynamic>();
+                // Query the users table to get the service provider details by ServiceProviderId
+                var userDetails = await _firebaseClient
+                    .Child("users")
+                    .OnceAsync<Users>();
 
-                var vehicle = vehicleDetails.FirstOrDefault(v => v.Object.UserId == ServiceProviderId);
+                var user = userDetails.FirstOrDefault(u => u.Object.MobileNumber == serviceProviderId);
 
-                if (vehicle != null)
+                if (user != null)
                 {
-                    VehicleDetails = $"{vehicle.Object.VehicleDescription} {vehicle.Object.PlateNumber}";
+                    // Once we have the user, query the vehicle details using their UserId
+                    var vehicleDetails = await _firebaseClient
+                        .Child("vehicles")
+                        .OnceAsync<Vehicle>();
+
+                    var vehicle = vehicleDetails.FirstOrDefault(v => v.Object.UserId == user.Object.UserId.ToString());
+
+                    if (vehicle != null)
+                    {
+                        VehicleDetails = $"{vehicle.Object.VehicleDescription} {vehicle.Object.PlateNumber}";
+                    }
+                    else
+                    {
+                        VehicleDetails = "No Vehicle Details Found";
+                    }
                 }
                 else
                 {
-                    VehicleDetails = "No Vehicle Details Found";
+                    VehicleDetails = "User not found";
                 }
             }
             catch (Exception ex)
             {
-                await Application.Current.MainPage.DisplayAlert("Error", "Failed to load vehicle details", "OK");
+                await Application.Current.MainPage.DisplayAlert("Error", $"Failed to load vehicle details: {ex.Message}", "OK");
             }
         }
+
     }
 }

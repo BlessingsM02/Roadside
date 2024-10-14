@@ -26,11 +26,11 @@
 
         <Label Text="Contact:"
                FontAttributes="Bold"/>
-        <Label Text="{Binding DriverId}">
+        <Label Text="{Binding ServiceProviderId}">
             <Label.GestureRecognizers>
                 <TapGestureRecognizer
                     Command="{Binding OpenDialerCommand}"
-                    CommandParameter="{Binding DriverId}" />
+                    CommandParameter="{Binding ServiceProviderId}" />
             </Label.GestureRecognizers>
         </Label>
 
