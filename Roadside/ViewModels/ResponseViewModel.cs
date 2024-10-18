@@ -28,7 +28,7 @@ namespace Roadside.ViewModels
 
                 // Retrieve the record by key
                 var record = await _firebaseClient
-                    .Child("ClickedMobileNumbers")
+                    .Child("request")
                     .Child(key)
                     .OnceSingleAsync<dynamic>();
 
@@ -67,7 +67,7 @@ namespace Roadside.ViewModels
                         .Child(key)
                         .OnceSingleAsync<dynamic>();
 
-                    if (request != null)
+                    if (request != null && request.Status == "Accepted")
                     {
                         // User exists in the "requests" table
                         await Application.Current.MainPage.DisplayAlert("Success", "Your request has been accepted.", "OK");

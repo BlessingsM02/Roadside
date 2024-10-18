@@ -48,7 +48,7 @@ namespace Roadside.ViewModels
 
                     // Send the object to Firebase and get the key
                     var result = await _firebaseClient
-                        .Child("ClickedMobileNumbers")
+                        .Child("request")
                         .PostAsync(requestData);
 
                     string key = result.Key; // The key of the newly created record
