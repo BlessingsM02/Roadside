@@ -3,6 +3,7 @@ using Firebase.Database;
 using Firebase.Database.Query;
 using Microsoft.Maui.Controls;
 using Roadside.Models;
+using Roadside.Views;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ namespace Roadside.ViewModels
         private double _longitude;
         private double _serviceProviderLatitude;
         private double _serviceProviderLongitude;
-        private double _amount;
+        private double _price;
         private string _driverId;
         private string _status;
         private string _ratingId;
@@ -30,6 +31,7 @@ namespace Roadside.ViewModels
 
         public RequestDetailsViewModel()
         {
+            CancelRequestCommand = new Command(async () => await CancelRequestAsync());
             OpenDialerCommand = new Command<string>(OpenDialer);
             _firebaseClient = new FirebaseClient("https://roadside-service-f65db-default-rtdb.firebaseio.com/");
             _firebaseClient2 = new FirebaseClient("https://roadside1-1ffd7-default-rtdb.firebaseio.com/");
@@ -37,6 +39,7 @@ namespace Roadside.ViewModels
         }
 
         public ICommand OpenDialerCommand { get; }
+        public ICommand CancelRequestCommand { get; }
 
         private void OpenDialer(string phoneNumber)
         {
@@ -52,6 +55,67 @@ namespace Roadside.ViewModels
                 }
             }
         }
+
+        private async Task CancelRequestAsync()
+        {
+            try
+            {
+                // Prompt the user for a reason
+                string reason = await Application.Current.MainPage.DisplayPromptAsync(
+                    "Cancel Request",
+                    "Please provide a reason for canceling the request:",
+                    accept: "OK",
+                    cancel: "Cancel"
+                );
+
+                // If the user provides a reason, proceed with the cancellation
+                if (!string.IsNullOrWhiteSpace(reason))
+                {
+                    var mobileNumber = Preferences.Get("mobile_number", string.Empty);
+
+                    // Retrieve the request to be canceled
+                    var requestDetails = await _firebaseClient
+                        .Child("request")
+                        .OnceAsync<RequestData>();
+
+                    var requestData = requestDetails.FirstOrDefault(r => r.Object.DriverId == mobileNumber)?.Object;
+
+                    if (requestData != null)
+                    {
+                        // Update the request status to "Canceled" and add the cancellation reason
+                        await _firebaseClient
+                            .Child("request")
+                            .Child(requestDetails.First(r => r.Object.DriverId == mobileNumber).Key)
+                            .PutAsync(new RequestData
+                            {
+                                ServiceProviderId = requestData.ServiceProviderId,
+                                Latitude = requestData.Latitude,
+                                Longitude = requestData.Longitude,
+                                ServiceProviderLatitude = requestData.ServiceProviderLatitude,
+                                ServiceProviderLongitude = requestData.ServiceProviderLongitude,
+                                Price = requestData.Price,
+                                DriverId = requestData.DriverId,
+                                Status = "Canceled",  // Mark the request as canceled
+                                RatingId = requestData.RatingId,
+                                Date = requestData.Date,
+                                CancellationReason = reason // Add the cancellation reason
+                            });
+
+                        await Application.Current.MainPage.DisplayAlert("Success", "The request has been canceled.", "OK");
+                        await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
+                    }
+                    else
+                    {
+                        await Application.Current.MainPage.DisplayAlert("Error", "No matching request found to cancel.", "OK");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await Application.Current.MainPage.DisplayAlert("Error", $"Failed to cancel request: {ex.Message}", "OK");
+            }
+        }
+
         public string ServiceProviderId
         {
             get => _serviceProviderId;
@@ -102,12 +166,12 @@ namespace Roadside.ViewModels
             }
         }
 
-        public double Amount
+        public double Price
         {
-            get => _amount;
+            get => _price;
             set
             {
-                _amount = value;
+                _price = value;
                 OnPropertyChanged();
             }
         }
@@ -182,7 +246,7 @@ namespace Roadside.ViewModels
 
                 // Retrieve request details from the requests table
                 var requestDetails = await _firebaseClient
-                    .Child("requests")
+                    .Child("request")
                     .OnceAsync<RequestData>();
                 //retrieve user data
                 var specificUser = await _firebaseClient2
@@ -199,7 +263,7 @@ namespace Roadside.ViewModels
                     Longitude = requestData.Longitude;
                     ServiceProviderLatitude = requestData.ServiceProviderLatitude;
                     ServiceProviderLongitude = requestData.ServiceProviderLongitude;
-                    Amount = requestData.Amount;
+                    Price = requestData.Price;
                     DriverId = requestData.DriverId;
                     Status = requestData.Status;
                     RatingId = requestData.RatingId;
@@ -287,6 +351,6 @@ namespace Roadside.ViewModels
                 await Application.Current.MainPage.DisplayAlert("Error", $"Failed to load vehicle details: {ex.Message}", "OK");
             }
         }
-
+        
     }
 }

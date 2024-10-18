@@ -40,11 +40,11 @@
 
         <Label Text="Amount:"
         FontAttributes="Bold"/>
-        <Label Text="{Binding Amount}" />
+        <Label Text="{Binding Price}" />
 
 
         <Button Text="Cancel Request"
-                Command="{Binding CloseCommand}"
+                Command="{Binding CancelRequestCommand}"
                 BackgroundColor="Red"
                 TextColor="White"
                 CornerRadius="20"

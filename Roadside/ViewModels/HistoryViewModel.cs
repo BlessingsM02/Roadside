@@ -64,7 +64,7 @@ namespace Roadside.ViewModels
                     if(request.Object.DriverId == mobileNumber)
                     {
                         AllRequests.Add(request.Object);
-                        TotalAmount += request.Object.Amount;
+                        TotalAmount += request.Object.Price;
                     }
                      
                 }

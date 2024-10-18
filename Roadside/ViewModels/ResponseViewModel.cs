@@ -2,29 +2,34 @@
 using Firebase.Database.Query;
 using Microsoft.Maui.Controls;
 using Roadside.Views;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Roadside.ViewModels
 {
     public class ResponseViewModel : BindableObject
     {
         private readonly FirebaseClient _firebaseClient;
-        private bool _stopChecking;
+        private CancellationTokenSource _cancellationTokenSource;
 
         public ResponseViewModel(string key)
         {
             _firebaseClient = new FirebaseClient("https://roadside-service-f65db-default-rtdb.firebaseio.com/");
-            CheckAndDeletePendingRecord(key);
-            PeriodicallyCheckRequestTable(key);
+            _cancellationTokenSource = new CancellationTokenSource();
+
+            // Start both tasks: checking for a pending record and periodically checking request table
+            CheckAndDeletePendingRecord(key, _cancellationTokenSource.Token);
+            PeriodicallyCheckRequestTable(key, _cancellationTokenSource.Token);
         }
 
-        
-
-        private async Task CheckAndDeletePendingRecord(string key)
+        private async Task CheckAndDeletePendingRecord(string key, CancellationToken cancellationToken)
         {
             try
             {
                 // Wait for 1 minute before checking the status
-                await Task.Delay(TimeSpan.FromMinutes(1));
+                await Task.Delay(TimeSpan.FromSeconds(40), cancellationToken);
+
+                if (cancellationToken.IsCancellationRequested) return;
 
                 // Retrieve the record by key
                 var record = await _firebaseClient
@@ -37,58 +42,70 @@ namespace Roadside.ViewModels
                 {
                     // Delete the record
                     await _firebaseClient
-                        .Child("ClickedMobileNumbers")
+                        .Child("request")
                         .Child(key)
                         .DeleteAsync();
 
-                    await Application.Current.MainPage.DisplayAlert("Info", "Service Provider did not respond", "OK");
+                    await Application.Current.MainPage.DisplayAlert("Info", "Service Provider did not respond in time.", "OK");
                     await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
                 }
             }
+            catch (TaskCanceledException)
+            {
+                // Task was canceled, handle accordingly if necessary
+            }
             catch (Exception ex)
             {
-                // Handle exceptions here
+                // Handle other exceptions
                 await Application.Current.MainPage.DisplayAlert("Error", "Something went wrong: " + ex.Message, "OK");
             }
         }
 
-        private async Task PeriodicallyCheckRequestTable(string key)
+        private async Task PeriodicallyCheckRequestTable(string key, CancellationToken cancellationToken)
         {
             try
             {
-                while (!_stopChecking) // Continuously check until stopped
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    // Check every 30 seconds
-                    await Task.Delay(TimeSpan.FromSeconds(5));
+                    // Check every 5 seconds
+                    await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
 
-                    // Query the "requests" table to see if the user exists
+                    if (cancellationToken.IsCancellationRequested) return;
+
+                    // Query the "request" table to see if the user exists
                     var request = await _firebaseClient
-                        .Child("requests")
+                        .Child("request")
                         .Child(key)
                         .OnceSingleAsync<dynamic>();
 
                     if (request != null && request.Status == "Accepted")
                     {
-                        // User exists in the "requests" table
+                        // The request has been accepted
                         await Application.Current.MainPage.DisplayAlert("Success", "Your request has been accepted.", "OK");
-                        _stopChecking = true; // Stop further checks
 
-                        // Navigate to the appropriate page if needed
-                        await App.Current.MainPage.Navigation.PushAsync(new RequestDetailsPage());
+                        // Stop further checks
+                        _cancellationTokenSource.Cancel();
+
+                        // Navigate to the RequestDetailsPage
+                        await Shell.Current.GoToAsync($"//{nameof(RequestDetailsPage)}");
                     }
                 }
             }
+            catch (TaskCanceledException)
+            {
+                // Task was canceled
+            }
             catch (Exception ex)
             {
-                // Handle exceptions
+                // Handle other exceptions
                 await Application.Current.MainPage.DisplayAlert("Error", "An error occurred while checking the request table: " + ex.Message, "OK");
             }
         }
 
-        // Method to stop the periodic checking when it's no longer needed
+        // Method to stop both tasks when no longer needed
         public void StopChecking()
         {
-            _stopChecking = true;
+            _cancellationTokenSource.Cancel();
         }
     }
 }

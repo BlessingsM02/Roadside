@@ -79,7 +79,7 @@ public partial class RequestDetailsPage : ContentPage
 
                 // Retrieve the current service request from Firebase
                 var serviceRequests = await _firebaseClient
-                    .Child("requests")
+                    .Child("request")
                     .OnceAsync<RequestData>();
 
                 var currentServiceRequest = serviceRequests
@@ -96,7 +96,7 @@ public partial class RequestDetailsPage : ContentPage
                         currentServiceRequest.Object.Longitude = location.Longitude;
 
                         await _firebaseClient
-                            .Child("requests")
+                            .Child("request")
                             .Child(currentServiceRequest.Key)
                             .PutAsync(currentServiceRequest.Object);
 
@@ -112,17 +112,17 @@ public partial class RequestDetailsPage : ContentPage
                             UpdateMapWithLocation("Service Provider Location", serviceProviderLatitude, serviceProviderLongitude, false);
 
                             // Draw the route between user and service provider
-                            DrawRoute(_userLocation, _serviceProviderLocation);
+                            //DrawRoute(_userLocation, _serviceProviderLocation);
                         }
                     }
                     else if (requestStatus == "Completed")
                     {
                        
                         // Show the price and ask the user to rate the driver
-                        await ShowPriceAndRatingDialog(currentServiceRequest.Object.Amount, currentServiceRequest.Object.DriverId);
+                        await ShowPriceAndRatingDialog(currentServiceRequest.Object.Price, currentServiceRequest.Object.DriverId);
 
                         await _firebaseClient
-                              .Child("requests")
+                              .Child("request")
                               .Child(currentServiceRequest.Key)
                               .DeleteAsync();
                         return;
@@ -132,7 +132,8 @@ public partial class RequestDetailsPage : ContentPage
                     else
                     {
                         // Notify the user if the status has changed
-                        await Application.Current.MainPage.DisplayAlert("Status Update", $"Request status has changed to {requestStatus}.", "OK");
+                        //await Application.Current.MainPage.DisplayAlert("Status Update", $"Request status has changed to {requestStatus}.", "OK");
+                        await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
                     }
                 }
                 else
@@ -212,7 +213,7 @@ public partial class RequestDetailsPage : ContentPage
     }
 
 
-    private void DrawRoute(Location startLocation, Location endLocation)
+   /* private void DrawRoute(Location startLocation, Location endLocation)
     {
         var routeLine = new Polyline
         {
@@ -227,7 +228,7 @@ public partial class RequestDetailsPage : ContentPage
         userMap.MapElements.Clear();
         userMap.MapElements.Add(routeLine);
     }
-
+*/
     private async void Button_Clicked(object sender, EventArgs e)
     {
         var bottomSheet = new RequestDetailsBottomSheet();
