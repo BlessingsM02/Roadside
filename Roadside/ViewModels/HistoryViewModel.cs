@@ -40,7 +40,7 @@ namespace Roadside.ViewModels
             // Initialize commands
             RefreshCommand = new Command(async () => await LoadRequestsAsync());
             CompletedCommand = new Command(ShowCompletedRequests);
-            CanceledCommand = new Command(ShowCanceledRequests);
+            //CanceledCommand = new Command(ShowCanceledRequests);
         }
 
         public async Task LoadRequestsAsync()
@@ -87,15 +87,6 @@ namespace Roadside.ViewModels
         {
             FilteredRequests.Clear();
             foreach (var request in AllRequests.Where(r => r.Status == "Completed")) // Change "Completed" to your actual status
-            {
-                FilteredRequests.Add(request);
-            }
-        }
-
-        private void ShowCanceledRequests()
-        {
-            FilteredRequests.Clear();
-            foreach (var request in AllRequests.Where(r => r.Status == "Canceled")) // Change "Canceled" to your actual status
             {
                 FilteredRequests.Add(request);
             }

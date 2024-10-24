@@ -17,27 +17,9 @@
                FontSize="Medium" HorizontalOptions="Center" />
 
         <!-- Button Stack with Styles -->
-        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="20">
-            <Button Text="Completed" 
-                    Command="{Binding CompletedCommand}" 
-                    BackgroundColor="#4CAF50" 
-                    TextColor="White" 
-                    WidthRequest="120" 
-                    CornerRadius="10" 
-                    Padding="10" 
-                    FontSize="Medium" />
+       
 
-            <Button Text="Canceled" 
-                    Command="{Binding CanceledCommand}" 
-                    BackgroundColor="#F44336" 
-                    TextColor="White" 
-                    WidthRequest="120" 
-                    CornerRadius="10" 
-                    Padding="10" 
-                    FontSize="Medium" />
-        </StackLayout>
-
-        <!-- Add RefreshView -->
+            <!-- Add RefreshView -->
         <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsBusy}">
             <CollectionView ItemsSource="{Binding FilteredRequests}">
                 <CollectionView.ItemTemplate>
@@ -46,7 +28,7 @@
                             <StackLayout>
                                 <Label Text="{Binding ServiceProviderId}" FontAttributes="Bold" FontSize="Medium" />
                                 <Label Text="{Binding Status}" FontSize="Small" />
-                                <Label Text="{Binding Amount, StringFormat='Amount: ZMW {0}'}" FontSize="Small" />
+                                <Label Text="{Binding Price, StringFormat='Amount: ZMW {0}'}" FontSize="Small" />
                                 <Label Text="{Binding Date, StringFormat='Date: {0:MM/dd/yyyy HH:mm}'}" FontSize="Small" />
                             </StackLayout>
                         </Frame>
