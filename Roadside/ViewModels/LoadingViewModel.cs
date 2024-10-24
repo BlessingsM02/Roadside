@@ -195,7 +195,7 @@ namespace Roadside.ViewModels
         public string Longitude { get; set; }
         public string MobileNumber { get; set; }
         public string FullName { get; set; }
-        public double Price { get; set; } // Add the Price property
+        public double Price { get; set; } 
     }
 
 

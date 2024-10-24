@@ -12,6 +12,8 @@ public partial class RequestDetailsPage : ContentPage
     private CancellationTokenSource _cancellationTokenSource;
     private Location _userLocation;
     private Location _serviceProviderLocation;
+    private string _currentRequestKey; // Store the key of the active request
+    private bool _isRequestCompleted = false; // Track if the request is completed
 
     public RequestDetailsPage()
     {
@@ -24,22 +26,78 @@ public partial class RequestDetailsPage : ContentPage
         base.OnAppearing();
         _cancellationTokenSource = new CancellationTokenSource();
 
-        // Start updating location every 5 seconds
-        StartLocationUpdates();
+        await InitializeCurrentRequest();
+
+        // Start updating location every 5 seconds if the request is still active
+        if (!_isRequestCompleted)
+        {
+            StartLocationUpdates();
+        }
     }
 
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
-        //_cancellationTokenSource?.Cancel(); // Stop location updates when page disappears
+        _cancellationTokenSource?.Cancel(); // Stop location updates when page disappears
+    }
+
+    private async void Button_Clicked(object sender, EventArgs e)
+    {
+        var bottomSheet = new RequestDetailsBottomSheet();
+        await MopupService.Instance.PushAsync(bottomSheet);
+    }
+    private async Task InitializeCurrentRequest()
+    {
+        // Retrieve mobile number
+        var mobileNumber = Preferences.Get("mobile_number", string.Empty);
+
+        // Retrieve the current service request from Firebase
+        var serviceRequests = await _firebaseClient
+            .Child("request")
+            .OnceAsync<RequestData>();
+
+        var currentServiceRequest = serviceRequests
+            .FirstOrDefault(u => u.Object.DriverId == mobileNumber);
+
+        if (currentServiceRequest != null)
+        {
+            _currentRequestKey = currentServiceRequest.Key;
+
+            if (currentServiceRequest.Object.Status == "Completed")
+            {
+                _isRequestCompleted = true; // Set completed status to true
+                await ShowPriceAndRatingDialog(currentServiceRequest.Object.Price, currentServiceRequest.Object.DriverId);
+
+                // Optionally delete the request after showing the dialog
+                await _firebaseClient.Child("request").Child(_currentRequestKey).DeleteAsync();
+
+                await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
+            }
+        }
+        else
+        {
+            await Application.Current.MainPage.DisplayAlert("Error", "No active request found.", "OK");
+            await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
+        }
     }
 
     private async void StartLocationUpdates()
     {
-        while (!_cancellationTokenSource.Token.IsCancellationRequested)
+        try
         {
-            await UpdateLocationAsync();
-            await Task.Delay(TimeSpan.FromSeconds(5), _cancellationTokenSource.Token);
+            while (!_cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                await UpdateLocationAsync();
+                await Task.Delay(TimeSpan.FromSeconds(5), _cancellationTokenSource.Token);
+            }
+        }
+        catch (TaskCanceledException)
+        {
+            // Handle task cancellation (safe to ignore in this case)
+        }
+        catch (Exception ex)
+        {
+            await Application.Current.MainPage.DisplayAlert("Alert", "Location", "OK");
         }
     }
     private void UpdateMapWithLocation(string label, double latitude, double longitude, bool isUserLocation)
@@ -52,21 +110,66 @@ public partial class RequestDetailsPage : ContentPage
             Type = PinType.Place
         };
 
-        // If it's the user's location, clear previous pins and add the new pin
+        // If it's the user's location, clear previous user pins
         if (isUserLocation)
         {
-            userMap.Pins.Clear();
+            var userPin = userMap.Pins.FirstOrDefault(p => p.Label == "Your Location");
+            if (userPin != null)
+            {
+                userMap.Pins.Remove(userPin);  // Remove the previous user's pin
+            }
+            //userMap.Pins.Add(pin);  // Add the new user pin
+        }
+        else
+        {
+            // For service provider, clear previous provider pins
+            var serviceProviderPin = userMap.Pins.FirstOrDefault(p => p.Label == "Service Provider Location");
+            if (serviceProviderPin != null)
+            {
+                userMap.Pins.Remove(serviceProviderPin);  // Remove the previous service provider's pin
+            }
+            userMap.Pins.Add(pin);  // Add the new service provider pin
         }
 
-        // Add the pin to the map
-        userMap.Pins.Add(pin);
+        // Optionally, center the map on the latest location
+        //userMap.MoveToRegion(MapSpan.FromCenterAndRadius(new Location(latitude, longitude), Distance.FromKilometers(1)));
+    }
+
+    private async Task ShowPriceAndRatingDialog(double price, string driverId)
+    {
+        // Display the price to the user
+        string priceMessage = $"The service is completed. The total price is {price:C}.";
+        await Application.Current.MainPage.DisplayAlert("Service Completed", priceMessage, "OK");
+
+        // Ask for a rating
+        string ratingMessage = "Please rate the service provider (1 to 5 stars):";
+        string ratingInput = await Application.Current.MainPage.DisplayPromptAsync("Rate Driver", ratingMessage, "Submit", "Cancel", "Enter rating here", 1, Keyboard.Numeric);
+
+        if (!string.IsNullOrEmpty(ratingInput) && int.TryParse(ratingInput, out int rating) && rating >= 1 && rating <= 5)
+        {
+            // Save the rating to Firebase
+            var ratingData = new
+            {
+                DriverId = driverId,
+                Rating = rating,
+                Date = DateTime.UtcNow
+            };
+
+            // Assuming you have a "ratings" table in Firebase
+            await _firebaseClient.Child("ratings").PostAsync(ratingData);
+
+            await Application.Current.MainPage.DisplayAlert("Thank You", "Your rating has been submitted.", "OK");
+        }
+        else
+        {
+            await Application.Current.MainPage.DisplayAlert("Error", "Invalid rating input. Please enter a number between 1 and 5.", "OK");
+        }
     }
 
     private async Task UpdateLocationAsync()
     {
         try
         {
-            // Fetch the user's current location
             var geolocationRequest = new GeolocationRequest(GeolocationAccuracy.High, TimeSpan.FromSeconds(10));
             var location = await Geolocation.GetLocationAsync(geolocationRequest);
 
@@ -74,83 +177,38 @@ public partial class RequestDetailsPage : ContentPage
             {
                 _userLocation = location;
 
-                // Retrieve mobile number
-                var mobileNumber = Preferences.Get("mobile_number", string.Empty);
-
-                // Retrieve the current service request from Firebase
-                var serviceRequests = await _firebaseClient
-                    .Child("request")
-                    .OnceAsync<RequestData>();
-
-                var currentServiceRequest = serviceRequests
-                    .FirstOrDefault(u => u.Object.DriverId == mobileNumber);
-
-                if (currentServiceRequest != null)
+                if (!string.IsNullOrEmpty(_currentRequestKey))
                 {
-                    var requestStatus = currentServiceRequest.Object.Status;
+                    var currentRequest = await _firebaseClient.Child("request").Child(_currentRequestKey).OnceSingleAsync<RequestData>();
 
-                    if (requestStatus == "Accepted")
+                    if (currentRequest.Status == "Accepted")
                     {
-                        // Update user's location in Firebase
-                        currentServiceRequest.Object.Latitude = location.Latitude;
-                        currentServiceRequest.Object.Longitude = location.Longitude;
+                        // Update location in Firebase
+                        currentRequest.Latitude = location.Latitude;
+                        currentRequest.Longitude = location.Longitude;
+                        await _firebaseClient.Child("request").Child(_currentRequestKey).PutAsync(currentRequest);
 
-                        await _firebaseClient
-                            .Child("request")
-                            .Child(currentServiceRequest.Key)
-                            .PutAsync(currentServiceRequest.Object);
-
-                        // Update user's and service provider's locations on the map
+                        // Update map
                         UpdateMapWithLocation("Your Location", location.Latitude, location.Longitude, true);
 
-                        if (currentServiceRequest.Object.ServiceProviderLatitude != 0 && currentServiceRequest.Object.ServiceProviderLongitude != 0)
+                        if (currentRequest.ServiceProviderLatitude != 0 && currentRequest.ServiceProviderLongitude != 0)
                         {
-                            var serviceProviderLatitude = currentServiceRequest.Object.ServiceProviderLatitude;
-                            var serviceProviderLongitude = currentServiceRequest.Object.ServiceProviderLongitude;
-
-                            _serviceProviderLocation = new Location(serviceProviderLatitude, serviceProviderLongitude);
-                            UpdateMapWithLocation("Service Provider Location", serviceProviderLatitude, serviceProviderLongitude, false);
-
-                            // Draw the route between user and service provider
-                            //DrawRoute(_userLocation, _serviceProviderLocation);
+                            _serviceProviderLocation = new Location(currentRequest.ServiceProviderLatitude, currentRequest.ServiceProviderLongitude);
+                            UpdateMapWithLocation("Service Provider Location", currentRequest.ServiceProviderLatitude, currentRequest.ServiceProviderLongitude, false);
                         }
                     }
-                    else if (requestStatus == "Completed")
+                    else if (currentRequest.Status == "Completed")
                     {
-                       
-                        // Show the price and ask the user to rate the driver
-                        await ShowPriceAndRatingDialog(currentServiceRequest.Object.Price, currentServiceRequest.Object.DriverId);
+                        _isRequestCompleted = true;
+                        await ShowPriceAndRatingDialog(currentRequest.Price, currentRequest.DriverId);
 
-                        await _firebaseClient
-                              .Child("request")
-                              .Child(currentServiceRequest.Key)
-                              .DeleteAsync();
+                        await _firebaseClient.Child("request").Child(_currentRequestKey).DeleteAsync();
                         return;
-
-                        
                     }
                     else
                     {
-                        // Notify the user if the status has changed
-                        //await Application.Current.MainPage.DisplayAlert("Status Update", $"Request status has changed to {requestStatus}.", "OK");
                         await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
                     }
-                }
-                else
-                {
-                    await Application.Current.MainPage.DisplayAlert("Error", "No active request found.", "OK");
-                    try
-                    {
-                        
-                        await Shell.Current.GoToAsync($"//{nameof(HomePage)}"); 
-                    }
-                    catch (Exception ex) {
-                        await Application.Current.MainPage.DisplayAlert("Error", "Nav eerr.", "OK");
-
-                    }
-
-                    return;
-
                 }
             }
             else
@@ -158,81 +216,11 @@ public partial class RequestDetailsPage : ContentPage
                 await Application.Current.MainPage.DisplayAlert("Error", "Unable to retrieve location data.", "OK");
             }
         }
-        catch (Exception geoEx)
-        {
-            await Application.Current.MainPage.DisplayAlert("Location Error", $"Failed to retrieve location: {geoEx.Message}", "OK");
-        }
-       
-    }
-
-    // Method to display price and ask for driver rating
-    private async Task ShowPriceAndRatingDialog(double price, string driverId)
-    {
-        // Display the price
-        await Application.Current.MainPage.DisplayAlert("Price", $"The service costs {price:C}.", "OK");
-
-        // Ask the user to rate the driver
-        string rating = await Application.Current.MainPage.DisplayPromptAsync(
-            "Rate Driver",
-            "Please rate the driver from 1 to 5 stars:",
-            maxLength: 1,
-            keyboard: Keyboard.Numeric);
-
-        if (int.TryParse(rating, out int ratingValue) && ratingValue >= 1 && ratingValue <= 5)
-        {
-            // Update Firebase with the driver rating
-            await UpdateDriverRating(driverId, ratingValue);
-            await Application.Current.MainPage.DisplayAlert("Thank You", "Your rating has been submitted!", "OK");
-        }
-        else
-        {
-            await Application.Current.MainPage.DisplayAlert("Invalid Rating", "Please provide a valid rating between 1 and 5.", "OK");
-        }
-    }
-
-    // Method to update the driver's rating in Firebase
-    private async Task UpdateDriverRating(string driverId, int ratingValue)
-    {
-        try
-        {
-            var driverRatingData = new RatingData
-            {
-                DriverId = driverId,
-                Rating = ratingValue,
-                Date = DateTime.UtcNow
-            };
-
-            await _firebaseClient
-                .Child("driverRatings")
-                .PostAsync(driverRatingData);
-        }
         catch (Exception ex)
         {
-            await Application.Current.MainPage.DisplayAlert("Error", $"Failed to submit rating: {ex.Message}", "OK");
+            await Application.Current.MainPage.DisplayAlert("Error", $"Failed to update location: {ex.Message}", "OK");
+            await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
         }
-    }
-
-
-   /* private void DrawRoute(Location startLocation, Location endLocation)
-    {
-        var routeLine = new Polyline
-        {
-            StrokeColor = Colors.Blue,
-            StrokeWidth = 3
-        };
-
-        // Assuming we use straight-line points for the route (a real implementation would require route data)
-        routeLine.Geopath.Add(startLocation);
-        routeLine.Geopath.Add(endLocation);
-
-        userMap.MapElements.Clear();
-        userMap.MapElements.Add(routeLine);
-    }
-*/
-    private async void Button_Clicked(object sender, EventArgs e)
-    {
-        var bottomSheet = new RequestDetailsBottomSheet();
-        await MopupService.Instance.PushAsync(bottomSheet);
     }
 }
 

@@ -83,9 +83,11 @@ namespace Roadside.ViewModels
                     if (requestData != null)
                     {
                         // Update the request status to "Canceled" and add the cancellation reason
+                        var canceledRequestKey = requestDetails.First(r => r.Object.DriverId == mobileNumber).Key;
+
                         await _firebaseClient
-                            .Child("request")
-                            .Child(requestDetails.First(r => r.Object.DriverId == mobileNumber).Key)
+                            .Child("Canceled")
+                            .Child(canceledRequestKey)
                             .PutAsync(new RequestData
                             {
                                 ServiceProviderId = requestData.ServiceProviderId,
@@ -101,7 +103,13 @@ namespace Roadside.ViewModels
                                 CancellationReason = reason // Add the cancellation reason
                             });
 
-                        await Application.Current.MainPage.DisplayAlert("Success", "The request has been canceled.", "OK");
+                        // Now delete the original request
+                        await _firebaseClient
+                            .Child("request")
+                            .Child(canceledRequestKey)
+                            .DeleteAsync();
+
+                        await Application.Current.MainPage.DisplayAlert("Success", "The request has been canceled", "OK");
                         await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
                     }
                     else
