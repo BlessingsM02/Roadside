@@ -203,10 +203,12 @@ public partial class RequestDetailsPage : ContentPage
                         await ShowPriceAndRatingDialog(currentRequest.Price, currentRequest.DriverId);
 
                         await _firebaseClient.Child("request").Child(_currentRequestKey).DeleteAsync();
+                        await MopupService.Instance.PopAsync();
                         return;
                     }
                     else
                     {
+                        await MopupService.Instance.PopAsync();
                         await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
                     }
                 }
@@ -218,7 +220,8 @@ public partial class RequestDetailsPage : ContentPage
         }
         catch (Exception ex)
         {
-            await Application.Current.MainPage.DisplayAlert("Error", $"Failed to update location: {ex.Message}", "OK");
+            await Application.Current.MainPage.DisplayAlert("Alert", "Info", "OK");
+            await MopupService.Instance.PopAsync();
             await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
         }
     }

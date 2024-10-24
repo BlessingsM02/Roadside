@@ -89,6 +89,19 @@ namespace Roadside.ViewModels
                         // Navigate to the RequestDetailsPage
                         await Shell.Current.GoToAsync($"//{nameof(RequestDetailsPage)}");
                     }
+
+                    if (request != null && request.Status == "Declined")
+                    {
+                        // The request has been accepted
+                        await Application.Current.MainPage.DisplayAlert("Info", "Your request has been Declined.", "OK");
+
+                        // Stop further checks
+                        _cancellationTokenSource.Cancel();
+
+                        // Navigate to the RequestDetailsPage
+                        await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
+                    }
+
                 }
             }
             catch (TaskCanceledException)
