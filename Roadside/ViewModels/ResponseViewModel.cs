@@ -93,6 +93,10 @@ namespace Roadside.ViewModels
                     if (request != null && request.Status == "Declined")
                     {
                         // The request has been accepted
+                        await _firebaseClient
+                            .Child("request")
+                            .Child(key)
+                            .DeleteAsync();
                         await Application.Current.MainPage.DisplayAlert("Info", "Your request has been Declined.", "OK");
 
                         // Stop further checks
