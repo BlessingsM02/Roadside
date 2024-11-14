@@ -89,8 +89,8 @@ namespace Roadside.ViewModels
 
         private async Task SubmitAsync()
         {
-            if (string.IsNullOrEmpty(FullName) ||
-                string.IsNullOrEmpty(VehicleDescription) || string.IsNullOrEmpty(PlateNumber))
+            if (string.IsNullOrWhiteSpace(FullName) ||
+                string.IsNullOrWhiteSpace(VehicleDescription) || string.IsNullOrWhiteSpace(PlateNumber))
             {
                 await Application.Current.MainPage.DisplayAlert("Error", "All fields are required.", "OK");
                 return;
@@ -100,7 +100,7 @@ namespace Roadside.ViewModels
             {
                 var mobileNumber = Preferences.Get("mobile_number", string.Empty);
 
-                if (!string.IsNullOrEmpty(mobileNumber))
+                if (!string.IsNullOrWhiteSpace(mobileNumber))
                 {
                     // Get the UserId after saving the user
                     int userId = await SaveUser();
