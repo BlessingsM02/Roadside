@@ -10,6 +10,7 @@ namespace Roadside.ViewModels
     public class LoadingViewModel : BindableObject
     {
         private readonly FirebaseClient _firebaseClient;
+        private bool _isRefreshing;
         public ICommand ButtonClickedCommand { get; }
         private ObservableCollection<WorkingWithUser> _allWorking;
 
@@ -18,12 +19,28 @@ namespace Roadside.ViewModels
             _firebaseClient = new FirebaseClient("https://roadside-service-f65db-default-rtdb.firebaseio.com/");
             LoadAllWorkingCommand = new Command(async () => await LoadAllWorkingAsync());
             LoadAllWorkingCommand.Execute(null);
-
+            RefreshCommand = new Command(async () => await OnRefresh());
             // Initialize the ButtonClickedCommand to accept a parameter of type WorkingWithUser
             ButtonClickedCommand = new Command<WorkingWithUser>(OnButtonClicked);
         }
 
-       
+        public ICommand RefreshCommand { get; }
+        public bool IsRefreshing
+        {
+            get => _isRefreshing;
+            set
+            {
+                _isRefreshing = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private async Task OnRefresh()
+        {
+            IsRefreshing = true;
+            await LoadAllWorkingAsync();
+            IsRefreshing = false;
+        }
         private async void OnButtonClicked(WorkingWithUser selectedUser)
         {
             if (selectedUser != null)

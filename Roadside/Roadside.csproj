@@ -74,12 +74,16 @@
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
 		<PackageReference Include="FirebaseAuthentication.net" Version="4.1.0" />
 		<PackageReference Include="FirebaseDatabase.net" Version="4.2.0" />
+		<PackageReference Include="LiteDB" Version="4.1.4" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Maui.Controls.Maps" Version="8.0.40" />
 		<PackageReference Include="Mopups" Version="1.3.1" />
-		<PackageReference Include="Syncfusion.Maui.Core" Version="26.2.8" />
+		<PackageReference Include="Syncfusion.Maui.Core" Version="27.1.58" />
+		<PackageReference Include="Syncfusion.Maui.Inputs" Version="27.1.58" />
+		<PackageReference Include="System.Private.Uri" Version="4.3.0" />
+		<PackageReference Include="System.Text.Json" Version="6.0.1" />
 		<PackageReference Include="The49.Maui.BottomSheet" Version="8.0.3" />
 	</ItemGroup>
 

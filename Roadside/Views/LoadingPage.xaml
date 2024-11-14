@@ -7,14 +7,14 @@
              Title="Service Providers"
              Shell.BackButtonBehavior="{Binding BackCommand}"
              BackgroundColor="#f0f4f7">
-    
- 
 
     <ContentPage.BindingContext>
         <vm:LoadingViewModel />
     </ContentPage.BindingContext>
+    <RefreshView IsRefreshing="{Binding IsRefreshing}"
+              Command="{Binding RefreshCommand}">
 
-    <VerticalStackLayout Spacing="20" Padding="20" BackgroundColor="#f0f4f7">
+        <VerticalStackLayout Spacing="20" Padding="20" BackgroundColor="#f0f4f7">
 
         <!-- Page Title -->
         <Label Text="Available Helpers"
@@ -24,49 +24,51 @@
                FontAttributes="Bold"
                TextColor="#2c3e50"/>
 
-        <!-- Service Providers List -->
-        <CollectionView ItemsSource="{Binding AllWorking}"
-                        SelectionMode="None"
-                        Margin="0,20,0,0">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Frame CornerRadius="10"
-                           HasShadow="True"
-                           Margin="0,10"
-                           Padding="10"
-                           BackgroundColor="White">
-                        <StackLayout Padding="10"
-                                     Orientation="Horizontal"
-                                     Spacing="15">
+        <!-- Pull-to-Refresh Wrapper -->
+       
+            <CollectionView ItemsSource="{Binding AllWorking}"
+                            SelectionMode="None"
+                            Margin="0,20,0,0">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame CornerRadius="10"
+                               HasShadow="True"
+                               Margin="0,10"
+                               Padding="10"
+                               BackgroundColor="White">
+                            <StackLayout Padding="10"
+                                         Orientation="Horizontal"
+                                         Spacing="15">
 
-                            <!-- Display the service provider's name -->
-                            <Label Text="{Binding FullName}"
-                                   FontSize="Medium"
-                                   VerticalOptions="Center"
-                                   TextColor="#34495e"
-                                   FontAttributes="Bold" />
-                            <Label Text="{Binding Price, StringFormat='K{0:F0}'}"
-                                    FontSize="Medium"
-                                    VerticalOptions="Center"
-                                   TextColor="#34495e"
-                                   FontAttributes="Bold" />
+                                <!-- Display the service provider's name -->
+                                <Label Text="{Binding FullName}"
+                                       FontSize="Medium"
+                                       VerticalOptions="Center"
+                                       TextColor="#34495e"
+                                       FontAttributes="Bold" />
+                                <Label Text="{Binding Price, StringFormat='K{0:F0}'}"
+                                       FontSize="Medium"
+                                       VerticalOptions="Center"
+                                       TextColor="#34495e"
+                                       FontAttributes="Bold" />
 
-                            <!-- Action Button -->
-                            <Button Text="Request"
-                                    BackgroundColor="#3498db"
-                                    TextColor="White"
-                                    FontAttributes="Bold"
-                                    CornerRadius="10"
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:LoadingViewModel}}, Path=ButtonClickedCommand}"
-                                    CommandParameter="{Binding .}"
-                                    HorizontalOptions="EndAndExpand"
-                                    VerticalOptions="Center"
-                                    WidthRequest="100"/>
-                        </StackLayout>
-                    </Frame>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+                                <!-- Action Button -->
+                                <Button Text="Request"
+                                        BackgroundColor="#3498db"
+                                        TextColor="White"
+                                        FontAttributes="Bold"
+                                        CornerRadius="10"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:LoadingViewModel}}, Path=ButtonClickedCommand}"
+                                        CommandParameter="{Binding .}"
+                                        HorizontalOptions="EndAndExpand"
+                                        VerticalOptions="Center"
+                                        WidthRequest="100"/>
+                            </StackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+       
 
         <!-- Back Button -->
         <Button Text="Back"
@@ -80,5 +82,5 @@
                 Clicked="Button_Clicked"/>
 
     </VerticalStackLayout>
-
+    </RefreshView>
 </ContentPage>

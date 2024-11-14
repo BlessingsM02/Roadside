@@ -19,5 +19,6 @@ namespace Roadside.Models
         public DateTime Date { get; set; }
         public string RatingId { get; set; }
         public string CancellationReason { get; internal set; }
+        public object ServiceProviderName { get; internal set; }
     }
 }

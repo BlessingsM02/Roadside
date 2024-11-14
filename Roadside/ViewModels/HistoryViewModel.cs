@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
 using Roadside.Models;
+using System.Globalization;
+using Firebase.Database.Query;
 
 namespace Roadside.ViewModels
 {
@@ -15,6 +17,7 @@ namespace Roadside.ViewModels
         public ObservableCollection<RequestData> AllRequests { get; private set; }
         public ObservableCollection<RequestData> FilteredRequests { get; private set; }
         public bool IsBusy { get; private set; }
+        public string _serviceProviderName { get; set; }
 
         private double _totalAmount; // Field to hold the total amount
         public double TotalAmount
@@ -24,6 +27,16 @@ namespace Roadside.ViewModels
             {
                 _totalAmount = value;
                 OnPropertyChanged(nameof(TotalAmount));
+            }
+        }
+
+        public String ServiceProviderName
+        {
+            get => _serviceProviderName;
+            private set
+            {
+                _serviceProviderName = value;
+                OnPropertyChanged(nameof(ServiceProviderName));
             }
         }
 
@@ -49,24 +62,35 @@ namespace Roadside.ViewModels
             {
                 IsBusy = true;
                 var mobileNumber = Preferences.Get("mobile_number", string.Empty);
-
                 OnPropertyChanged(nameof(IsBusy));
 
-                // Fetch all requests from Firebase
+                // Fetch all completed requests
                 var allRequests = await _firebaseClient.Child("complete").OnceAsync<RequestData>();
 
-                AllRequests.Clear(); // Clear previous data
-                TotalAmount = 0; // Reset total amount before calculation
+                AllRequests.Clear();
+                TotalAmount = 0;
 
-                // Add all requests to the collection
+                // Iterate through each request
                 foreach (var request in allRequests)
                 {
-                    if(request.Object.DriverId == mobileNumber)
+                    if (request.Object.DriverId == mobileNumber)
                     {
+                        // Get the service provider's name using the DriverId (mobile number)
+                        var users = await _firebaseClient
+                                                    .Child("users")
+                                                    .OnceAsync<Users>();
+
+                        var user = users.FirstOrDefault(v => v.Object.MobileNumber == request.Object.ServiceProviderId)?.Object;
+                        if (user != null)
+                        {
+                            // Store the service provider's name in the request data
+                            request.Object.ServiceProviderName = user.FullName;
+                        }
+
+                        // Add the request to the collection and update the total amount
                         AllRequests.Add(request.Object);
                         TotalAmount += request.Object.Price;
                     }
-                     
                 }
 
                 // Show completed requests by default
@@ -82,6 +106,7 @@ namespace Roadside.ViewModels
                 OnPropertyChanged(nameof(IsBusy));
             }
         }
+
 
         private void ShowCompletedRequests()
         {
