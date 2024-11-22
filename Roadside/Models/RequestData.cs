@@ -17,7 +17,7 @@ namespace Roadside.Models
         public string Status { get; set; }
         public double Price { get; set; }
         public DateTime Date { get; set; }
-        public string RatingId { get; set; }
+        public int RatingId { get; set; }
         public string CancellationReason { get; internal set; }
         public object ServiceProviderName { get; internal set; }
     }

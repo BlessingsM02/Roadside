@@ -72,12 +72,14 @@ public partial class RequestDetailsPage : ContentPage
                 await _firebaseClient.Child("request").Child(_currentRequestKey).DeleteAsync();
 
                 await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
+                return;
             }
         }
         else
         {
             await Application.Current.MainPage.DisplayAlert("Error", "No active request found.", "OK");
             await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
+            return;
         }
     }
 
@@ -98,6 +100,8 @@ public partial class RequestDetailsPage : ContentPage
         catch (Exception ex)
         {
             await Application.Current.MainPage.DisplayAlert("Alert", "Location", "OK");
+            await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
+            return;
         }
     }
     private void UpdateMapWithLocation(string label, double latitude, double longitude, bool isUserLocation)
@@ -138,33 +142,33 @@ public partial class RequestDetailsPage : ContentPage
     private async Task ShowPriceAndRatingDialog(double price, string driverId)
     {
         // Display the price to the user
-        string priceMessage = $"The service is completed. The total price is {price:C}.";
+        string priceMessage = $"The service is completed. The total price is {price:K}.";
         await Application.Current.MainPage.DisplayAlert("Service Completed", priceMessage, "OK");
 
-        // Ask for a rating
-        string ratingMessage = "Please rate the service provider (1 to 5 stars):";
-        string ratingInput = await Application.Current.MainPage.DisplayPromptAsync("Rate Driver", ratingMessage, "Submit", "Cancel", "Enter rating here", 1, Keyboard.Numeric);
+        // Show a custom rating popup
+        var ratingPopup = new RatingPopup();
+        await MopupService.Instance.PushAsync(ratingPopup);
 
-        if (!string.IsNullOrEmpty(ratingInput) && int.TryParse(ratingInput, out int rating) && rating >= 1 && rating <= 5)
+        // Wait for user input
+        int? selectedRating = await ratingPopup.GetRatingAsync();
+
+        if (selectedRating.HasValue && selectedRating >= 1 && selectedRating <= 5)
         {
-            // Save the rating to Firebase
-            var ratingData = new
-            {
-                DriverId = driverId,
-                Rating = rating,
-                Date = DateTime.UtcNow
-            };
+            // Update the rating in the request table
+            var currentRequest = await _firebaseClient.Child("request").Child(_currentRequestKey).OnceSingleAsync<RequestData>();
+            currentRequest.RatingId = selectedRating.Value;
 
-            // Assuming you have a "ratings" table in Firebase
-            await _firebaseClient.Child("ratings").PostAsync(ratingData);
+            // Save the updated request back to Firebase
+            await _firebaseClient.Child("request").Child(_currentRequestKey).PutAsync(currentRequest);
 
             await Application.Current.MainPage.DisplayAlert("Thank You", "Your rating has been submitted.", "OK");
         }
         else
         {
-            await Application.Current.MainPage.DisplayAlert("Error", "Invalid rating input. Please enter a number between 1 and 5.", "OK");
+            await Application.Current.MainPage.DisplayAlert("Error", "Please select a valid rating.", "OK");
         }
     }
+
 
     private async Task UpdateLocationAsync()
     {
@@ -227,10 +231,3 @@ public partial class RequestDetailsPage : ContentPage
     }
 }
 
-internal class RatingData
-{
-    public string DriverId { get; set; }
-    public int Rating { get; set; }
-
-    public DateTime Date { get; set; }
-}

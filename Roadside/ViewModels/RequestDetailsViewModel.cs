@@ -23,7 +23,7 @@ namespace Roadside.ViewModels
         private double _price;
         private string _driverId;
         private string _status;
-        private string _ratingId;
+        private int _ratingId;
         private DateTime _date;
         private string _driverName;
         private string _vehicleDetails;
@@ -204,7 +204,7 @@ namespace Roadside.ViewModels
             }
         }
 
-        public string RatingId
+        public int RatingId
         {
             get => _ratingId;
             set
