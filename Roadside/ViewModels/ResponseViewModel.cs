@@ -2,8 +2,10 @@
 using Firebase.Database.Query;
 using Microsoft.Maui.Controls;
 using Roadside.Views;
+using System.Reactive;
 using System.Threading;
 using System.Threading.Tasks;
+using Plugin.LocalNotification;
 
 namespace Roadside.ViewModels
 {
@@ -61,6 +63,24 @@ namespace Roadside.ViewModels
             }
         }
 
+        private async Task ShowNotification(string message)
+        {
+            var tes = new NotificationRequest
+            {
+                NotificationId = 1134,
+                Title = "Testing",
+                Subtitle = message,
+                Description = "hehehehe",
+                BadgeNumber = 42,
+                Schedule = new NotificationRequestSchedule
+                {
+                    NotifyTime = DateTime.Now.AddSeconds(1),
+
+                }
+            };
+            await LocalNotificationCenter.Current.Show(tes);
+        }
+
         private async Task PeriodicallyCheckRequestTable(string key, CancellationToken cancellationToken)
         {
             try
@@ -97,6 +117,7 @@ namespace Roadside.ViewModels
                             .Child("request")
                             .Child(key)
                             .DeleteAsync();
+                        await ShowNotification("This is a testing notification");
                         await Application.Current.MainPage.DisplayAlert("Info", "Your request has been Declined.", "OK");
 
                         // Stop further checks

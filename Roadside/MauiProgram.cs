@@ -4,6 +4,7 @@ using Syncfusion.Maui.Core.Hosting;
 using CommunityToolkit.Maui;
 using The49.Maui.BottomSheet;
 using Mopups.Hosting;
+using Plugin.LocalNotification;
 
 
 namespace Roadside
@@ -19,6 +20,7 @@ namespace Roadside
 
                 .UseMauiCommunityToolkit()
                 .UseMauiMaps()
+                .UseLocalNotification()
                 .ConfigureMopups()
                 .UseBottomSheet()
                 .ConfigureSyncfusionCore()

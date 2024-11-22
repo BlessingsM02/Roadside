@@ -118,7 +118,7 @@ namespace Roadside.ViewModels
             }
             catch (Exception ex)
             {
-                await Application.Current.MainPage.DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");
+                await Application.Current.MainPage.DisplayAlert("Error", $"An error occurred", "OK");
             }
         }
 
@@ -145,7 +145,6 @@ namespace Roadside.ViewModels
                 UserId = newUserId,
                 FullName = FullName,
                 MobileNumber = mobileNumber, // Updated field for contact
-                //PlateNumber = PlateNumber // Include PlateNumber in user record
             };
 
             await _firebaseClient
