@@ -290,7 +290,7 @@ namespace Roadside.ViewModels
             }
             catch (Exception ex)
             {
-                await Application.Current.MainPage.DisplayAlert("Error", $"Failed to load request details: {ex.Message}", "OK");
+                await Application.Current.MainPage.DisplayAlert("Error", "Failed to load request details", "OK");
             }
         }
 

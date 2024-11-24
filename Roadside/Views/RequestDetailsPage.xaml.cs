@@ -3,6 +3,7 @@ using Firebase.Database.Query;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Maps;
 using Mopups.Services;
+using Plugin.LocalNotification;
 using Roadside.Models;
 
 namespace Roadside.Views;
@@ -66,6 +67,7 @@ public partial class RequestDetailsPage : ContentPage
             if (currentServiceRequest.Object.Status == "Completed")
             {
                 _isRequestCompleted = true; // Set completed status to true
+                await ShowNotification("Completed", $"Service has been completed, Total price is {currentServiceRequest.Object.Price}");
                 await ShowPriceAndRatingDialog(currentServiceRequest.Object.Price, currentServiceRequest.Object.DriverId);
 
                 // Optionally delete the request after showing the dialog
@@ -99,7 +101,7 @@ public partial class RequestDetailsPage : ContentPage
         }
         catch (Exception ex)
         {
-            await Application.Current.MainPage.DisplayAlert("Alert", "Location", "OK");
+            //await Application.Current.MainPage.DisplayAlert("Alert", "Location", "OK");
             await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
             return;
         }
@@ -139,10 +141,23 @@ public partial class RequestDetailsPage : ContentPage
         //userMap.MoveToRegion(MapSpan.FromCenterAndRadius(new Location(latitude, longitude), Distance.FromKilometers(1)));
     }
 
+    private async Task ShowNotification(string title, string description)
+    {
+        var tes = new NotificationRequest
+        {
+            NotificationId = 134,
+            Title = title,
+            Description = description,
+            BadgeNumber = 42,
+
+        };
+        await LocalNotificationCenter.Current.Show(tes);
+    }
+
     private async Task ShowPriceAndRatingDialog(double price, string driverId)
     {
         // Display the price to the user
-        string priceMessage = $"The service is completed. The total price is {price:K}.";
+        string priceMessage = $"The service is completed. The total price is {price:C}.";
         await Application.Current.MainPage.DisplayAlert("Service Completed", priceMessage, "OK");
 
         // Show a custom rating popup
@@ -154,20 +169,43 @@ public partial class RequestDetailsPage : ContentPage
 
         if (selectedRating.HasValue && selectedRating >= 1 && selectedRating <= 5)
         {
-            // Update the rating in the request table
-            var currentRequest = await _firebaseClient.Child("request").Child(_currentRequestKey).OnceSingleAsync<RequestData>();
-            currentRequest.RatingId = selectedRating.Value;
+            // Retrieve the current request
+            var currentRequest = await _firebaseClient
+                .Child("request")
+                .Child(_currentRequestKey)
+                .OnceSingleAsync<RequestData>();
 
-            // Save the updated request back to Firebase
-            await _firebaseClient.Child("request").Child(_currentRequestKey).PutAsync(currentRequest);
+            // Create a new rating object
+            var rating = new Rating
+            {
+                DriverId = currentRequest.DriverId,
+                ServiceProviderId = currentRequest.ServiceProviderId,
+                RatingValue = selectedRating.Value,
+                RequestId = _currentRequestKey,
+                Timestamp = DateTime.UtcNow
+            };
+
+            // Save the rating to the Firebase 'ratings' table
+            await _firebaseClient
+                .Child("ratings")
+                .PostAsync(rating);
 
             await Application.Current.MainPage.DisplayAlert("Thank You", "Your rating has been submitted.", "OK");
+
+            // Optionally update the request to mark it as rated
+            currentRequest.RatingId = selectedRating.Value;
+            await _firebaseClient
+                .Child("request")
+                .Child(_currentRequestKey)
+                .PutAsync(currentRequest);
         }
         else
         {
             await Application.Current.MainPage.DisplayAlert("Error", "Please select a valid rating.", "OK");
         }
     }
+
+
 
 
     private async Task UpdateLocationAsync()
@@ -224,7 +262,7 @@ public partial class RequestDetailsPage : ContentPage
         }
         catch (Exception ex)
         {
-            await Application.Current.MainPage.DisplayAlert("Alert", "Info", "OK");
+            //await Application.Current.MainPage.DisplayAlert("Alert", "Info", "OK");
             await MopupService.Instance.PopAsync();
             await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
         }

@@ -1,9 +1,6 @@
-﻿using Android;
-using Android.App;
+﻿using Android.App;
 using Android.Content.PM;
 using Android.OS;
-using AndroidX.Core.App;
-using AndroidX.Core.Content;
 using Firebase;
 
 namespace Roadside
@@ -15,11 +12,7 @@ namespace Roadside
         {
             base.OnCreate(savedInstanceState);
             FirebaseApp.InitializeApp(this);
-            if (ContextCompat.CheckSelfPermission(this, Manifest.Permission.PostNotifications) != Permission.Granted)
-            {
-                // Request permission
-                ActivityCompat.RequestPermissions(this, new string[] { Manifest.Permission.PostNotifications }, 101);
-            }
+            
         }
 
     }

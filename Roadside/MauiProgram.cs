@@ -20,8 +20,8 @@ namespace Roadside
 
                 .UseMauiCommunityToolkit()
                 .UseMauiMaps()
-                .UseLocalNotification()
                 .ConfigureMopups()
+                .UseLocalNotification()
                 .UseBottomSheet()
                 .ConfigureSyncfusionCore()
                 .ConfigureFonts(fonts =>

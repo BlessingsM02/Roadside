@@ -1,11 +1,7 @@
 ﻿using Firebase.Database;
 using Firebase.Database.Query;
-using Microsoft.Maui.Controls;
-using Roadside.Views;
-using System.Reactive;
-using System.Threading;
-using System.Threading.Tasks;
 using Plugin.LocalNotification;
+using Roadside.Views;
 
 namespace Roadside.ViewModels
 {
@@ -48,7 +44,8 @@ namespace Roadside.ViewModels
                         .Child(key)
                         .DeleteAsync();
 
-                    await Application.Current.MainPage.DisplayAlert("Info", "Service Provider did not respond in time.", "OK");
+                    await ShowNotification("Alert", "Service provider did not respond in time");
+                    await Application.Current.MainPage.DisplayAlert("Info", "Service Provider did not respond in time", "OK");
                     await Shell.Current.GoToAsync($"//{nameof(HomePage)}");
                 }
             }
@@ -59,24 +56,19 @@ namespace Roadside.ViewModels
             catch (Exception ex)
             {
                 // Handle other exceptions
-                await Application.Current.MainPage.DisplayAlert("Error", "Something went wrong: " + ex.Message, "OK");
+                await Application.Current.MainPage.DisplayAlert("Error", "Something went wrong", "OK");
             }
         }
 
-        private async Task ShowNotification(string message)
+        private async Task ShowNotification(string title, string description)
         {
             var tes = new NotificationRequest
             {
                 NotificationId = 1134,
-                Title = "Testing",
-                Subtitle = message,
-                Description = "hehehehe",
+                Title = title,
+                Description = description,
                 BadgeNumber = 42,
-                Schedule = new NotificationRequestSchedule
-                {
-                    NotifyTime = DateTime.Now.AddSeconds(1),
-
-                }
+                
             };
             await LocalNotificationCenter.Current.Show(tes);
         }
@@ -101,6 +93,7 @@ namespace Roadside.ViewModels
                     if (request != null && request.Status == "Accepted")
                     {
                         // The request has been accepted
+                        await ShowNotification("Success", "You request has been accepted");
                         await Application.Current.MainPage.DisplayAlert("Success", "Your request has been accepted.", "OK");
 
                         // Stop further checks
@@ -117,7 +110,7 @@ namespace Roadside.ViewModels
                             .Child("request")
                             .Child(key)
                             .DeleteAsync();
-                        await ShowNotification("This is a testing notification");
+                        await ShowNotification("Decline", "You request has been declined");
                         await Application.Current.MainPage.DisplayAlert("Info", "Your request has been Declined.", "OK");
 
                         // Stop further checks
@@ -136,7 +129,7 @@ namespace Roadside.ViewModels
             catch (Exception ex)
             {
                 // Handle other exceptions
-                await Application.Current.MainPage.DisplayAlert("Error", "An error occurred while checking the request table: " + ex.Message, "OK");
+                await Application.Current.MainPage.DisplayAlert("Error", "An error occurred while checking the request table", "OK");
             }
         }
 
