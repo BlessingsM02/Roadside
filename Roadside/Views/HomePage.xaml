@@ -12,7 +12,8 @@
                   IsShowingUser="True"
                   VerticalOptions="FillAndExpand"
                   HorizontalOptions="FillAndExpand"
-                  Margin="0,0,0,80"/>
+                  Margin="0,0,0,80"
+                  MapClicked="Map_MapClicked"/>
 
         <Button 
             Text="Request"

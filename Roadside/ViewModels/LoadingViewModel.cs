@@ -97,7 +97,6 @@ namespace Roadside.ViewModels
         {
             try
             {
-                // Get the user's current location
                 var request = new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10));
                 var userLocation = await Geolocation.GetLocationAsync(request);
 
@@ -118,7 +117,6 @@ namespace Roadside.ViewModels
                     var serviceProviderLatitude = double.Parse(record.Object.Latitude);
                     var serviceProviderLongitude = double.Parse(record.Object.Longitude);
 
-                    // Calculate distance using Haversine formula
                     double distanceInKm = CalculateDistance(
                         userLocation.Latitude,
                         userLocation.Longitude,
@@ -126,13 +124,15 @@ namespace Roadside.ViewModels
                         serviceProviderLongitude
                     );
 
-                    // Only add service providers within 16km
                     if (distanceInKm <= 16)
                     {
                         var user = await GetUserDetailsAsync(record.Object.Id);
                         if (user != null)
                         {
                             double price = CalculatePrice(distanceInKm);
+
+                            // Fetch and calculate average rating
+                            double averageRating = await GetAverageRatingAsync(record.Object.Id);
 
                             allWorkingWithUser.Add(new WorkingWithUser
                             {
@@ -141,7 +141,8 @@ namespace Roadside.ViewModels
                                 Longitude = record.Object.Longitude,
                                 FullName = user.FullName,
                                 MobileNumber = user.MobileNumber,
-                                Price = price // Assign the calculated price
+                                Price = price,
+                                AverageRating = averageRating // Add calculated average rating
                             });
                         }
                     }
@@ -154,6 +155,30 @@ namespace Roadside.ViewModels
                 await Application.Current.MainPage.DisplayAlert("Error", $"Unable to load data: {ex.Message}", "OK");
             }
         }
+
+        private async Task<double> GetAverageRatingAsync(string serviceProviderId)
+        {
+            try
+            {
+                var ratings = await _firebaseClient
+                    .Child("ratings")
+                    .OnceAsync<Rating>(); // Assuming Rating is a class representing the ratings
+
+                var serviceProviderRatings = ratings
+                    .Where(r => r.Object.ServiceProviderId == serviceProviderId)
+                    .Select(r => r.Object.RatingValue);
+
+                if (!serviceProviderRatings.Any())
+                    return 0;
+
+                return Math.Round(serviceProviderRatings.Average(), 1); // Calculate average and round to 1 decimal place
+            }
+            catch
+            {
+                return 0; // Return 0 if there is an error or no ratings
+            }
+        }
+
 
         private async Task<Users> GetUserDetailsAsync(string mobileNumber)
         {
@@ -212,7 +237,8 @@ namespace Roadside.ViewModels
         public string Longitude { get; set; }
         public string MobileNumber { get; set; }
         public string FullName { get; set; }
-        public double Price { get; set; } 
+        public double Price { get; set; }
+        public double AverageRating { get; set; }
     }
 
 

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<mopups:PopupPage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mopups="clr-namespace:Mopups.Pages;assembly=Mopups"
+    x:Class="Roadside.Views.TowTruckDetailsPopup">
+
+    <Grid Padding="20" 
+                         BackgroundColor="White" 
+                         HeightRequest="200" 
+                         VerticalOptions="End">
+        <StackLayout Spacing="5">
+            <Label x:Name="CompanyName"
+                    FontAttributes="Bold" 
+                    FontSize="20" 
+                    TextColor="Black"
+                    HorizontalOptions="Center"/>
+
+            <Label x:Name="CompanyAddress" 
+                FontSize="16" TextColor="Gray"
+                HorizontalOptions="Center" />
+
+            <Label x:Name="CompanyContact"
+                    FontAttributes="Bold" 
+                    FontSize="20" 
+                    TextColor="LightBlue"
+                    HorizontalOptions="Center">
+                <Label.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding DialCommand}" 
+                                              CommandParameter="{Binding Text, Source={x:Reference CompanyContact}}" />
+                </Label.GestureRecognizers>
+            </Label>
+        </StackLayout>
+        
+        <Button Text="Close"
+            Command="{Binding CloseCommand}"
+            BackgroundColor="Red" 
+            TextColor="White" VerticalOptions="End" />
+    </Grid>
+
+</mopups:PopupPage>
